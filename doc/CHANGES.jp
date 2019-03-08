@@ -1085,3 +1085,18 @@
 6. 配色を Windows 2000 風にした。
 7. インジケータアイコンが全部消えた後、タスクトレイの時計の一部が表示
    されなくなるバグを修正。
+
+1.1.11 -> 1.1.12 の変更点
+-------------------------
+1. 終了時にサウンドを鳴らすと qvwm が落ちることがあるバグを修正。
+2. NO_BUTTON3 を指定した時に最大化ボタンが消え、終了ボタンは残ったまま
+   になるバグを修正。
+3. qvwm にリモートコマンドを送った後、CPU使用率が100%になるバグを修正。
+4. ウィンドウを指定して QVWM_RESTORE などのリモートコマンドを送れるよ
+   うにした。
+5. ショートカットアイコンの間隔を IconHorizontalSpacing と
+   IconVerticalSpacing で変更できるようにした。
+6. german.qvwmrc, portuguese.qvwmrc, italian.qvwmrc を追加した。
+7. メニューから実行した時にメニューの一部が画面上に残るバグを修正。
+8. QVWM_TOGGLE_{FOCUS, BORDER, BORDER_EDGE, BUTTON1, BUTTON2, BUTTON3,
+   CTRLBTN, TBUTTON, TITLE}を追加。

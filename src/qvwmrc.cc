@@ -133,6 +133,8 @@ int FrameTitleHeight                = Qvwm::BUTTON_HEIGHT + 4;
 int FrameBorderWidth                = 2;
 int TaskbarButtonHeight             = 22;
 int IndicatorSize                   = 16;
+int IconVerticalSpacing             = 43;
+int IconHorizontalSpacing           = 43;
 
 /*
  * Images
@@ -358,6 +360,8 @@ VariableTable varTable[] =
    {"FrameBorderWidth",		F_POSITIVE,	&FrameBorderWidth},
    {"TaskbarButtonHeight",	F_POSITIVE,	&TaskbarButtonHeight},
    {"IndicatorSize",		F_POSITIVE,	&IndicatorSize},
+   {"IconVerticalSpacing",	F_POSITIVE,	&IconVerticalSpacing},
+   {"IconHorizontalSpacing",	F_POSITIVE,	&IconHorizontalSpacing},
    {"ShiftMoveRatio",		F_FLOATING,	&ShiftMoveRatio},
    {"CtrlMoveRatio",		F_FLOATING,	&CtrlMoveRatio},
    {"HourGlassTime",		F_NATURAL,	&HourGlassTime},

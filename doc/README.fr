@@ -11,7 +11,7 @@ romains). Mais qvwm est également "98 Window Manager" car 'v' signifie
 aussi '8' (un 'v' inversé verticalement étant identique au caractère kanji pour
 '8').
 
-La version actuelle est 1.1.11 (Ookayama).
+La version actuelle est 1.1.12 (Senzoku).
 
 
 Fonctionnalités

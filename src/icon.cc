@@ -87,8 +87,8 @@ void Icon::init(char* iconname, int x, int y)
    */
   AlterIconName(iconname);
 
-  rc.width = IconSize + 43;
-  rc.height = IconSize + 43;
+  rc.width = IconSize + IconHorizontalSpacing;
+  rc.height = IconSize + IconVerticalSpacing;
   if (rc.height < 2 + IconSize + 4 + rcText.height)
     rc.height = 2 + IconSize + 4 + rcText.height;
   
@@ -232,13 +232,15 @@ void Icon::CreateShapedShadowWindow()
 
   if (img->GetMask())
     XCopyPlane(display, img->GetMask(), shadowMask, gcShadow,
-	       0, 0, IconSize, IconSize, 21, 2, 1);
+	       0, 0, IconSize, IconSize, IconHorizontalSpacing / 2, 2, 1);
   else
-    XFillRectangle(display, shadowMask, gcShadow, 21, 2, IconSize, IconSize);
+    XFillRectangle(display, shadowMask, gcShadow,
+		   IconHorizontalSpacing / 2, 2, IconSize, IconSize);
 
   // create semi-transparent mask for icon image
   GC gcTile = CreateTileGC(shadowMask);
-  XFillRectangle(display, shadowMask, gcTile, 21, 2, IconSize, IconSize);
+  XFillRectangle(display, shadowMask, gcTile,
+		 IconHorizontalSpacing / 2, 2, IconSize, IconSize);
   XFreeGC(display, gcTile);
 
   // create shaped icon name
@@ -302,7 +304,7 @@ void Icon::ResetFocus()
 void Icon::DrawIcon(Bool focus)
 {
   if (dragging && img)
-    img->Display(shadow, Point(21, 2));
+    img->Display(shadow, Point(IconHorizontalSpacing / 2, 2));
 
   if (focus)
     XSetForeground(display, gc, DesktopActiveColor.pixel);
@@ -352,7 +354,7 @@ void Icon::DrawText(Drawable d, GC dGc, Rect rect)
       *end = '\0';
     
     // Center this line of text
-    str = GetFixName(fsIcon, start, IconSize + 43);
+    str = GetFixName(fsIcon, start, IconSize + IconHorizontalSpacing);
     XmbTextExtents(fsIcon, str, strlen(str), &ink, &log);
     
     // Draw it
@@ -382,7 +384,7 @@ void Icon::DrawText(Drawable d, GC dGc, Rect rect)
 
 void Icon::MoveIcon(const Point& pt)
 {
-  XMoveWindow(display, frame, pt.x + 21, pt.y + 2);
+  XMoveWindow(display, frame, pt.x + IconHorizontalSpacing / 2, pt.y + 2);
   XMoveWindow(display, text, pt.x + rcText.x, pt.y + rcText.y);
   XMoveWindow(display, wrap, pt.x, pt.y);
 }
@@ -602,7 +604,7 @@ void Icon::AlterIconName(char* iconname)
   XmbTextExtents(fsIcon, name, strlen(name), &ink, &log);
   
   // If it fits on a sigle line, no problem.
-  if (log.width <= IconSize + 43) {
+  if (log.width <= IconSize + IconHorizontalSpacing) {
     rcText.width = log.width;
     rcText.height = log.height;
     textLines = 1;
@@ -645,7 +647,7 @@ void Icon::AlterIconName(char* iconname)
         while (*end && *end != ' ')
 	  end++;
         // If too large, insert a break before the word
-        if (len > IconSize + 43) {
+        if (len > IconSize + IconHorizontalSpacing) {
           if (start != name) { // can't break before first word !
             len -= sizes[i];
             if (len > rcText.width)
@@ -666,12 +668,12 @@ void Icon::AlterIconName(char* iconname)
 	rcText.width = len;
     }
     else {
-      rcText.width = IconSize + 43;
+      rcText.width = IconSize + IconHorizontalSpacing;
       rcText.height = log.height;
     }
   }
 
-  rcText.x = (IconSize + 43 - rcText.width) / 2;
+  rcText.x = (IconSize + IconHorizontalSpacing - rcText.width) / 2;
   rcText.y = 2 + IconSize + 4;
 
   if (rcText.width == 0)

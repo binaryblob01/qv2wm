@@ -128,6 +128,8 @@ extern int FrameTitleHeight;
 extern int FrameBorderWidth;
 extern int TaskbarButtonHeight;
 extern int IndicatorSize;
+extern int IconVerticalSpacing;
+extern int IconHorizontalSpacing;
 
 extern char* TitlebarImage;
 extern char* TitlebarActiveImage;

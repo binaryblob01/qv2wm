@@ -21,7 +21,7 @@
 #ifndef _VER_H_
 #define _VER_H_
 
-const char* Version = "1.1.11";
-const char* Codename = "Ookayama";
+const char* Version = "1.1.12";
+const char* Codename = "Senzoku";
 
 #endif // _VER_H_

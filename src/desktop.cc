@@ -348,7 +348,7 @@ void Desktop::FinishQvwm(Bool reStart)
   XClearWindow(display, root);
 
   if (!reStart) {
-    PlaySound(SystemExitSound);
+    PlaySound(SystemExitSound, True);
     XCloseDisplay(display);
     exit(0);
   }
@@ -427,7 +427,8 @@ void Desktop::CreateIcons()
       icon = new Icon(img, mItem->name, mItem->func, mItem->x, mItem->y);
     desktop.GetIconList().InsertTail(icon);
 
-    icon->MoveIcon(Point(-(IconSize + 43), -(IconSize + 43)));
+    icon->MoveIcon(Point(-(IconSize + IconHorizontalSpacing),
+			 -(IconSize + IconVerticalSpacing)));
     icon->MapIcon();
 
     tmpItem = mItem;
@@ -447,20 +448,20 @@ void Desktop::RedrawAllIcons()
   int count = 0;
   int iconColumnNum;
 
-  iconColumnNum = rcScreen.height / (IconSize + 43);
+  iconColumnNum = rcScreen.height / (IconSize + IconVerticalSpacing);
 
   for (Icon* tmpIcon = i.GetHead(); tmpIcon; tmpIcon = i.GetNext()) {
     Rect rcVirt = tmpIcon->GetVirtRect();
 
     if (rcVirt.x == -1)
-      rcVirt.x = (IconSize + 43) * (count / iconColumnNum);
+      rcVirt.x = (IconSize + IconHorizontalSpacing) * (count / iconColumnNum);
     else if (rcVirt.x >= Icon::SFACTOR)
-      rcVirt.x = (IconSize + 43) * (rcVirt.x - Icon::SFACTOR);
+      rcVirt.x = (IconSize + IconHorizontalSpacing) * (rcVirt.x - Icon::SFACTOR);
 
     if (rcVirt.y == -1)
-      rcVirt.y = (IconSize + 43) * (count % iconColumnNum);
+      rcVirt.y = (IconSize + IconVerticalSpacing) * (count % iconColumnNum);
     else if (rcVirt.y >= Icon::SFACTOR)
-      rcVirt.y = (IconSize + 43) * (rcVirt.y - Icon::SFACTOR);
+      rcVirt.y = (IconSize + IconVerticalSpacing) * (rcVirt.y - Icon::SFACTOR);
 
     tmpIcon->SetVirtRect(rcVirt);
 
@@ -487,12 +488,12 @@ void Desktop::LineUpAllIcons()
   for (Icon* tmpIcon = i.GetHead(); tmpIcon; tmpIcon = i.GetNext()) {
     Rect rcVirt = tmpIcon->GetVirtRect();
 
-    modulo = rcVirt.x % (IconSize + 43);
-    rcVirt.x += (modulo > (IconSize + 43) / 2) ?
-      IconSize + 43 - modulo : -modulo;
-    modulo = rcVirt.y % (IconSize + 43);
-    rcVirt.y += (modulo > (IconSize + 43) / 2) ?
-      IconSize + 43 - modulo : -modulo;
+    modulo = rcVirt.x % (IconSize + IconHorizontalSpacing);
+    rcVirt.x += (modulo > (IconSize + IconHorizontalSpacing) / 2) ?
+      IconSize + IconHorizontalSpacing - modulo : -modulo;
+    modulo = rcVirt.y % (IconSize + IconVerticalSpacing);
+    rcVirt.y += (modulo > (IconSize + IconVerticalSpacing) / 2) ?
+      IconSize + IconVerticalSpacing - modulo : -modulo;
   
     tmpIcon->SetVirtRect(rcVirt);
 

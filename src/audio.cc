@@ -32,6 +32,7 @@
 #include "main.h"
 #include "qvwmrc.h"
 #include "audio.h"
+#include "audiodev.h"
 #include "audiodev_alsa.h"
 #include "audiodev_esd.h"
 #include "audiodev_oss.h"

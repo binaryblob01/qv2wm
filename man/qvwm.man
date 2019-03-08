@@ -274,11 +274,17 @@ DefaultFont is used.
 Sets the foreground color for icon bitmap of application by the color name
 or the format #RGB, etc.
 .TP
+\fBIconHorizontalSpacing\fP (43)
+Sets the horizontal spacing between short cut icons.
+.TP
 \fBIconSize\fP (32)
 Sets the icon size.
 .TP
 \fBIconStringColor\fP (white)
 Sets the icon string color.
+.TP
+\fBIconVerticalSpacing\fP (43)
+Sets the vertical spacing between short cut icons.
 .TP
 \fBImageAnimation\fP (True)
 Sets whether qvwm makes images like shortcut icons animate.
@@ -660,6 +666,15 @@ QVWM_CLOSE                 close a window (recommend) [win]
 QVWM_KILL                  close a window forcely [win]
 QVWM_TOGGLE_ONTOP          toggle switch of an ONTOP attribute [win]
 QVWM_TOGGLE_STICKY         toggle switch of a STICKY attribute [win]
+QVWM_TOGGLE_FOCUS          toggle switch of a focus attribute [win]
+QVWM_TOGGLE_BORDER         toggle switch of a border [win]
+QVWM_TOGGLE_BORDER_EDGE    toggle switch of a border edge [win]
+QVWM_TOGGLE_BUTTON1        toggle switch of a minimize button [win]
+QVWM_TOGGLE_BUTTON2        toggle switch of a restore button [win]
+QVWM_TOGGLE_BUTTON3        toggle switch of a close button [win]
+QVWM_TOGGLE_CTRLBTN        toggle switch of a control button [win]
+QVWM_TOGGLE_TBUTTON        toggle switch of a taskbar button [win]
+QVWM_TOGGLE_TITLE          toggle switch of a title bar [win]
 .EE
 Window Focus
 .EX

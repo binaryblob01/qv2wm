@@ -343,6 +343,159 @@ Bool QvFunction::execFunction(FuncNumber fn, Qvwm* qvWm)
     }
     break;
 
+  case Q_TOGGLE_BORDER:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(BORDER)) {
+	qvWm->ResetFlags(BORDER);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(BORDER);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_BORDER_EDGE:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(BORDER_EDGE)) {
+	qvWm->ResetFlags(BORDER_EDGE);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(BORDER_EDGE);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_BUTTON1:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(BUTTON1)) {
+	qvWm->ResetFlags(BUTTON1);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(BUTTON1);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_BUTTON2:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(BUTTON2)) {
+	qvWm->ResetFlags(BUTTON2);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(BUTTON2);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_BUTTON3:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(BUTTON3)) {
+	qvWm->ResetFlags(BUTTON3);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(BUTTON3);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_CTRLBTN:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(CTRL_MENU)) {
+	qvWm->ResetFlags(CTRL_MENU);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(CTRL_MENU);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_FOCUS:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(NO_FOCUS)) {
+	qvWm->ResetFlags(NO_FOCUS);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(NO_FOCUS);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_TBUTTON:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(NO_TBUTTON)) {
+	qvWm->ResetFlags(NO_TBUTTON);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(NO_TBUTTON);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_TITLE:
+    if (qvWm != rootQvwm) {
+      if (qvWm->CheckFlags(TITLE)) {
+	qvWm->ResetFlags(TITLE);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+      else {
+	qvWm->SetFlags(TITLE);
+	qvWm->ConfigureNewRect(qvWm->GetRect());
+        qvWm->MinimizeWindow();
+	qvWm->RestoreWindow ();
+      }
+    }
+    break;
+
   default:
     return execFunction(fn);
   }
@@ -716,6 +869,15 @@ static FuncTable funcTable[] =
    {"QVWM_KILL",			Q_KILL},
    {"QVWM_TOGGLE_ONTOP",		Q_TOGGLE_ONTOP},
    {"QVWM_TOGGLE_STICKY",		Q_TOGGLE_STICKY},
+   {"QVWM_TOGGLE_FOCUS",		Q_TOGGLE_FOCUS},
+   {"QVWM_TOGGLE_BORDER",		Q_TOGGLE_BORDER},
+   {"QVWM_TOGGLE_BORDER_EDGE",		Q_TOGGLE_BORDER_EDGE},
+   {"QVWM_TOGGLE_BUTTON1",		Q_TOGGLE_BUTTON1},
+   {"QVWM_TOGGLE_BUTTON2",		Q_TOGGLE_BUTTON2},
+   {"QVWM_TOGGLE_BUTTON3",		Q_TOGGLE_BUTTON3},
+   {"QVWM_TOGGLE_CTRLBTN",		Q_TOGGLE_CTRLBTN},
+   {"QVWM_TOGGLE_TBUTTON",		Q_TOGGLE_TBUTTON},
+   {"QVWM_TOGGLE_TITLE",		Q_TOGGLE_TITLE},
    // window focus
    {"QVWM_SWITCH_TASK",			Q_SWITCH_TASK},
    {"QVWM_SWITCH_TASK_BACK",		Q_SWITCH_TASK_BACK},

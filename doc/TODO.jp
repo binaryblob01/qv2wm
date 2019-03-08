@@ -1,5 +1,6 @@
 TODO
 ----
+- system.qvwmrc 等で $HOME/.qvwm/StartUp 等を include (merge)
 - xprop の内容(resource name etc.)を表示できるように
 - start menu の logo を 0x0 にできるように
 
