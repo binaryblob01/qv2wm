@@ -97,12 +97,13 @@ TooltipColor		= qvyellow
 TooltipStringColor	= black
 
 ; sounds
-OpeningSound		= "chimes.wav"
-EndingSound		= "chimes.wav"
-RestartSound		= "chimes.wav"
+SystemStartSound	= "chimes.wav"
+SystemExitSound		= "chimes.wav"
+SystemRestartSound	= "chimes.wav"
 ;MaximizeSound		= ""
 ;MinimizeSound		= ""
-;RestoreSound		= ""
+;RestoreUpSound		= ""
+;RestoreDownSound	= ""
 ;ExpandSound		= ""
 
 

@@ -14,9 +14,9 @@ DefaultShortcutIcon	= "icon32.ani"	; default shortcut icon
 DefaultFont		= "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*"
 
 ; desktop
-WallPaper		= Windows98	; image tiled in the desktop
-DesktopColor		= qvblue	; shortcut background color
-DesktopActiveColor	= qvblue	; shortcut active color
+WallPaper		= Windows2000	; image tiled in the desktop
+DesktopColor		= qvroyalblue	; desktop background color
+DesktopActiveColor	= qvblue	; desktop active color
 CursorColor		= white		; cursor color
 
 ; titlebar
@@ -100,17 +100,22 @@ ButtonStringColor	= black		; button string color
 ButtonStringActiveColor	= black		; button string active color
 
 ; tooltip
-TooltipColor		= qvyellow
+TooltipColor		= qvlightyellow
 TooltipStringColor	= black
 
 ; sounds
-OpeningSound		= "chimes.wav"
-EndingSound		= "chimes.wav"
-RestartSound		= "chimes.wav"
+SystemStartSound	= "chimes.wav"
+SystemExitSound		= "chimes.wav"
+SystemRestartSound	= "chimes.wav"
 ;MaximizeSound		= ""
 ;MinimizeSound		= ""
-;RestoreSound		= ""
+;RestoreUpSound		= ""
+;RestoreDownSound	= ""
 ;ExpandSound		= ""
+;OpenSound		= ""
+;CloseSound		= ""
+;MenuPopupSound		= ""
+;MenuCommandSound	= ""
 
 
 [Accessories]

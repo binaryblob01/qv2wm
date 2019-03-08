@@ -1,7 +1,7 @@
 /*
  * qvwmrc.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,14 +28,12 @@
 #include "qvwm.h"
 
 const int HashTableSize = 50;
-extern const int FuncTableSize;
 extern const int VarTableSize;
 extern const int FsNum;
 extern const int AttrNum;
 extern const int KeyModNum;
 extern const int MenuKeyNum;
 
-class FuncTable;
 class VariableTable;
 class SCKeyTable;
 struct SCKeyEntry;
@@ -109,6 +107,12 @@ extern int TaskbarHideDelay;
 extern Bool LockDragState;
 extern char* ScreenSaverProg;
 extern int ScreenSaverDelay;
+extern Bool TaskbarButtonInScr;
+extern Bool EnableSound;
+extern Bool EnableAlsa;
+extern Bool EnableEsd;
+extern Bool AllowRemoteCmd;
+extern Bool DisableDesktopChange;
 
 extern char* StartButtonTitle;
 extern char* StartButtonMessage;
@@ -137,13 +141,25 @@ extern char* DialogImage;
 extern char* SwitcherImage;
 extern char* StartMenuLogoImage;
 
+extern char* SystemStartSound;
+extern char* SystemExitSound;
+extern char* SystemRestartSound;
+extern char* MaximizeSound;
+extern char* MinimizeSound;
+extern char* RestoreUpSound;
+extern char* RestoreDownSound;
+extern char* ExpandSound;
+extern char* MenuPopupSound;
+extern char* MenuCommandSound;
+extern char* OpenSound;
+extern char* CloseSound;
+extern char* PagerSound;
+extern char* PagingSound;
+
 extern char* OpeningSound;
 extern char* EndingSound;
 extern char* RestartSound;
-extern char* MaximizeSound;
-extern char* MinimizeSound;
 extern char* RestoreSound;
-extern char* ExpandSound;
 
 extern char* DefaultIcon;
 extern char* DefaultLargeIcon;
@@ -186,7 +202,6 @@ extern SCKeyTable* menuKey;
 
 extern SCKeyEntry scMenuKey[];
 
-extern FuncTable funcTable[];
 extern VariableTable varTable[];
 extern FsNameSet fsSet[];
 extern AttrNameSet attrSet[];

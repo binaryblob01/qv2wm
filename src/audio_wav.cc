@@ -1,7 +1,7 @@
 /*
  * audio_wav.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,9 @@
 #endif
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include "audio_wav.h"
+#include "message.h"
 
 //
 // Wave format:
@@ -45,20 +47,29 @@ int AudioWav::Play(char* file)
   FILE* fp;
   char id[4], format[8];
   WavHdr hdr;
-  int len, ret;
+  long len;
+  int encoding;
+  int ret;
 
-  fp = fopen(file, "r");
-  if (fp == NULL)
-    return AUDIO_NOFILE;
+  if ((fp = fopen(file, "r")) == NULL) {
+    if (errno == ENOENT)
+      return AUDIO_NOFILE;
+    else {
+      QvwmError("wave file open error: %s", strerror(errno));
+      return AUDIO_ERROR;
+    }
+  }
 
   // check a magic
   if (fread(id, 4, 1, fp) < 1) {
+    QvwmError("wave file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
   if (memcmp(id, "RIFF", 4) != 0) {
+    QvwmError("wave file magic string is not 'RIFF'");
     fclose(fp);
-    return AUDIO_BADFMT;
+    return AUDIO_ERROR;
   }
 
   // read a size; ignored
@@ -66,68 +77,79 @@ int AudioWav::Play(char* file)
   
   // check a format
   if (fread(format, 8, 1, fp) < 1) {
+    QvwmError("wave file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
   if (memcmp(format, "WAVEfmt ", 8) != 0) {
+    QvwmError("wave file format does not start with 'WAVEfmt '");
     fclose(fp);
-    return AUDIO_BADFMT;
+    return AUDIO_ERROR;
   }
 
   // read a size
-  len = getLWord(fp);
-  if (len < 16) {
+  if (getLWord(fp, &len) < 0) {
+    QvwmError("wave file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
+  }
+  else if (len < 16) {
+    QvwmError("wave file size is too small: %d", len);
+    fclose(fp);
+    return AUDIO_ERROR;
   }
 
   // read a format type
-  hdr.m_wFormatTag = getLHalf(fp);
-  if (hdr.m_wFormatTag < 0) {
+  if (getLHalf(fp, &hdr.m_wFormatTag) < 0) {
+    QvwmError("wave file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
 
   // read stereo or mono
-  hdr.m_wChannels = getLHalf(fp);
-  if (hdr.m_wChannels < 0) {
+  if (getLHalf(fp, &hdr.m_wChannels) < 0) {
+    QvwmError("wave file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
   else if (hdr.m_wChannels != 1 && hdr.m_wChannels != 2) {
+    QvwmError("wave file channel is illegal: %d", hdr.m_wChannels);
     fclose(fp);
-    return AUDIO_BADFMT;
+    return AUDIO_ERROR;
   }
 
   // read a sampling rate
-  hdr.m_dwSamplesPerSec = getLWord(fp);
-  if (hdr.m_dwSamplesPerSec < 0) {
+  if (getLWord(fp, &hdr.m_dwSamplesPerSec) < 0) {
+    QvwmError("wave file sampling rate is illegal: %d", hdr.m_dwSamplesPerSec);
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
   
   // read average bytes per second; ignored
   if (skipWord(fp) < 0) {
+    QvwmError("wave file seek error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
 
   // read block alignment; ignored
   if (skipHalf(fp) < 0) {
+    QvwmError("wave file seek error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
 
   // read sampling bits per sample
-  hdr.m_wBitsPerSample = getLHalf(fp);
-  if (hdr.m_wBitsPerSample < 0) {
+  if (getLHalf(fp, &hdr.m_wBitsPerSample) < 0) {
+    QvwmError("wave file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
 
   if (fseek(fp, len - 16, SEEK_CUR) < 0) {
+    QvwmError("wave file seek error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
 
 #ifdef DEBUG
@@ -140,21 +162,23 @@ int AudioWav::Play(char* file)
   // search a starting point of data area
   while (1) {
     if (fread(id, 4, 1, fp) < 1) {
+      QvwmError("wave file read error: %s", strerror(errno));
       fclose(fp);
-      return AUDIO_BROKEN;
+      return AUDIO_ERROR;
     }
-    len = getLWord(fp);
-    if (len < 0) {
+    if (getLWord(fp, &len) < 0) {
+      QvwmError("wave file read error: %s", strerror(errno));
       fclose(fp);
-      return AUDIO_BROKEN;
+      return AUDIO_ERROR;
     }
 
     if (memcmp(id, "data", 4) == 0)
       break;
     else {
       if (fseek(fp, len, SEEK_CUR) < 0) {
+	QvwmError("wave file seek error: %s", strerror(errno));
 	fclose(fp);
-	return AUDIO_BROKEN;
+	return AUDIO_ERROR;
       }
     }
   }
@@ -165,45 +189,34 @@ int AudioWav::Play(char* file)
 
   // open an audio device
   if (openDevice() < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("openDevice");
-#endif
     fclose(fp);
-    return ret;
+    return AUDIO_ERROR;
   }
 
   // set the data format
-  if (setFormat(hdr.m_wBitsPerSample) < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("setFormat");
-#endif
+  if (hdr.m_wBitsPerSample == 8)
+    encoding = EN_ULINEAR;
+  else
+    encoding = EN_SLINEAR;
+
+  if (setFormat(hdr.m_wBitsPerSample, encoding) < 0) {
     fclose(fp);
     closeDevice();
-    return ret;
+    return AUDIO_ERROR;
   }
 
   // set the number of channels
   if (setChannels(hdr.m_wChannels) < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("setChannels");
-#endif
     fclose(fp);
     closeDevice();
-    return ret;
+    return AUDIO_ERROR;
   }
 
   // set a sampling rate
   if (setSamplingRate(hdr.m_dwSamplesPerSec) < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("setSamplingRate");
-#endif
     fclose(fp);
     closeDevice();
-    return ret;
+    return AUDIO_ERROR;
   }
   
   ret = outputStream(fp, len);

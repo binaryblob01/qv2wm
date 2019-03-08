@@ -1,7 +1,7 @@
 /*
  * audio.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,129 +27,122 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include "main.h"
+#include "qvwmrc.h"
 #include "audio.h"
+#include "audiodev_alsa.h"
+#include "audiodev_esd.h"
+#include "audiodev_oss.h"
+#include "audiodev_sun.h"
 
-// sound playback type definition
-#if defined(USE_ESD)
-#define ESD
-#else
-
-#if defined(__linux__) && defined(USE_ALSA)
-#define ALSA
-#endif
-
-#if (defined(__linux__) && !defined(ALSA)) || defined(__FreeBSD__)
-#define OSS
-#endif
-
-#if defined(sun) || defined(__NetBSD__) || defined(__OpenBSD__)
-#define SUN
-#endif
-
-#endif
-
-// include header file
-#ifdef ESD
-#include <esd.h>
-#else
-
-#ifdef __linux__
+Audio::Audio(char* audiodev)
+{
 #ifdef ALSA
-#include <sys/asoundlib.h>
-#else
-#include <linux/soundcard.h>
-#endif
-#endif
-
-#ifdef __FreeBSD__
-#include <machine/soundcard.h>
+  if (EnableAlsa) {
+    m_audioDev = new AudiodevAlsa();
+    return;
+  }
 #endif
 
-#if defined(sun) && !defined(__SVR4)
-#include <sun/audioio.h>
+#ifdef ESD
+  if (EnableEsd) {
+    m_audioDev = new AudiodevEsd(NULL);
+    return;
+  }
 #endif
 
-#if (defined(sun) && defined(__SVR4)) || defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/audioio.h>
-#endif
-
-#endif
-
-// extra definition
 #ifdef OSS
-#ifndef SNDCTL_DSP_CHANNELS
-#define SNDCTL_DSP_CHANNELS SOUND_PCM_WRITE_CHANNELS
-#endif // !SNDCTL_DSP_CHANNELS
-#endif // OSS
+  m_audioDev = new AudiodevOss(audiodev);
+  return;
+#endif
 
-// return 0 if success
-// return a positive number if file is illegal
-// return a negative number if system error
+#ifdef SUN_AUDIO
+  m_audioDev = new AudiodevSun(audiodev);
+  return;
+#endif
+
+  QvwmError("qvwm does not support sound facility in your architecture");
+  EnableSound = False;
+
+  return;
+}
+
+Audio::~Audio()
+{
+}
+
 int Audio::Play(char* file)
 {
+  // dummy play
   return 0;
 }
 
 // get a word (4 bytes) of little endian
-int Audio::getLWord(FILE* fp)
+int Audio::getLWord(FILE* fp, long *word)
 {
   unsigned char data[4];
 
   if (fread(data, 4, 1, fp) < 1)
-    return -1;
-
-  return data[0] + ((int)data[1] << 8) + ((int)data[2] << 16)
+    return AUDIO_ERROR;
+  
+  *word = data[0] + ((int)data[1] << 8) + ((int)data[2] << 16)
     + ((int)data[3] << 24);
+  return 0;
 }
 
 // get a word (4 bytes) of big endian
-int Audio::getBWord(FILE* fp)
+int Audio::getBWord(FILE* fp, long *word)
 {
   unsigned char data[4];
 
   if (fread(data, 4, 1, fp) < 1)
-    return -1;
+    return AUDIO_ERROR;
 
-  return data[3] + ((int)data[2] << 8) + ((int)data[1] << 16)
+  *word = data[3] + ((int)data[2] << 8) + ((int)data[1] << 16)
     + ((int)data[0] << 24);
+  return 0;
 }
 
 // skip a word (4 bytes)
 int Audio::skipWord(FILE* fp)
 {
   if (fseek(fp, 4L, SEEK_CUR) < 0)
-    return -1;
+    return AUDIO_ERROR;
 
   return 0;
 }
 
 // get a half word (2 bytes) of little endian
-short Audio::getLHalf(FILE* fp)
+int Audio::getLHalf(FILE* fp, short *half)
 {
   unsigned char data[2];
 
   if (fread(data, 2, 1, fp) < 1)
-    return -1;
+    return AUDIO_ERROR;
 
-  return data[0] + ((short)data[1] << 8);
+  *half = data[0] + ((short)data[1] << 8);
+  return 0;
 }
 
 // get a half word (2 bytes) of big endian
-short Audio::getBHalf(FILE* fp)
+int Audio::getBHalf(FILE* fp, short *half)
 {
   unsigned char data[2];
 
   if (fread(data, 2, 1, fp) < 1)
-    return -1;
+    return AUDIO_ERROR;
 
-  return data[1] + ((short)data[0] << 8);
+  *half = data[1] + ((short)data[0] << 8);
+  return 0;
 }
 
 // skip a half word (2 bytes)
 int Audio::skipHalf(FILE* fp)
 {
   if (fseek(fp, 2L, SEEK_CUR) < 0)
-    return -1;
+    return AUDIO_ERROR;
 
   return 0;
 }
@@ -157,227 +150,80 @@ int Audio::skipHalf(FILE* fp)
 // open an audio device
 int Audio::openDevice()
 {
-#ifdef ALSA
-  if (snd_pcm_open(&m_audiopcm, 0, 0, SND_PCM_OPEN_PLAYBACK) < 0)
-    return -1;
+  if (!EnableSound)
+    return AUDIO_FATAL;
 
-  memset(&m_audioformat, 0, sizeof(m_audioformat));
-  return 1;
-#elif defined(ESD)
-  return 1;
-#else
-  m_audiofd = open(m_audiodev, O_WRONLY);
-  if (m_audiofd < 0)
-    return -1;
-  
-  return m_audiofd;
-#endif
+  return m_audioDev->open();
 }
 
 // close an audio device
 int Audio::closeDevice()
 {
-#ifdef ALSA
-  if (snd_pcm_close(m_audiopcm) < 0)
-    return -1;
-#elif defined(ESD)
-  if (!(m_audiofd < 0))
-    if (esd_close(m_audiofd) < 0)
-      return -1;
-#else
-  if (close(m_audiofd) < 0)
-    return -1;
-#endif
+  if (!EnableSound)
+    return AUDIO_FATAL;
 
-  return 0;
+  return m_audioDev->close();
 }
 
 // set the data format
 int Audio::setFormat(int bits, int encoding)
 {
-#ifdef ALSA
-  if (encoding != EN_LINEAR && encoding != EN_NONE)
-    return -1;
-  if (bits == 8)
-    m_audioformat.format = SND_PCM_SFMT_U8;
-  else if (bits == 16)
-#ifdef SND_LITTLE_ENDIAN
-    m_audioformat.format = SND_PCM_SFMT_S16_LE;
-#else
-    m_audioformat.format = SND_PCM_SFMT_S16_BE;
-#endif
-  else
-    return -1;
-#endif
-	
-#ifdef ESD
-  if (encoding != EN_LINEAR && encoding != EN_NONE)
-    return -1;
-  m_audioformat = m_audioformat & ~ESD_MASK_BITS;
-  if (bits == 8)
-    m_audioformat |= ESD_BITS8;
-  else if (bits == 16)
-    m_audioformat |= ESD_BITS16;
-  else
-    return -1;
-#endif
+  if (!EnableSound)
+    return AUDIO_FATAL;
 
-#ifdef OSS
-  if (encoding != EN_LINEAR && encoding != EN_NONE)
-    return -1;
-  // If bits is 8, encoding is AFMT_U8
-  // If bits is 16, encoding is AFMT_S16_BE
-  if (ioctl(m_audiofd, SNDCTL_DSP_SETFMT, &bits) < 0)
-    return -1;
-#endif
-
-#ifdef SUN
-  struct audio_info_t ainfo;
-
-  AUDIO_INITINFO(&ainfo);
-
-  // select .wav file encoding
-  if (encoding == EN_NONE || encoding == EN_LINEAR)
-    encoding = bits == 8 ? AUDIO_ENCODING_LINEAR8 : AUDIO_ENCODING_LINEAR;
-
-  ainfo.play.encoding = encoding;
-  ainfo.play.precision = bits;
-
-  if (ioctl(m_audiofd, AUDIO_SETINFO, &ainfo) < 0)
-    return -1;
-#endif
-
-  return 0;
+  return m_audioDev->setFormat(bits, encoding);
 }
 
 // set the number of channels; mono = 1, stereo = 2
 int Audio::setChannels(int channels)
 {
-#ifdef ALSA
-  m_audioformat.channels = channels;
-#endif
+  if (!EnableSound)
+    return AUDIO_FATAL;
 
-#ifdef ESD
-  m_audioformat = m_audioformat & ~ESD_MASK_CHAN;
-  if (channels == 1)
-    m_audioformat |= ESD_MONO;
-  else
-    m_audioformat |= ESD_STEREO;
-#endif
-
-#ifdef OSS
-  if (ioctl(m_audiofd, SNDCTL_DSP_CHANNELS, &channels) < 0)
-    return -1;
-#endif
-
-#ifdef SUN
-  struct audio_info_t ainfo;
-
-  AUDIO_INITINFO(&ainfo);
-  ainfo.play.channels = channels;
-
-  if (ioctl(m_audiofd, AUDIO_SETINFO, &ainfo) < 0)
-    return -1;
-#endif
-
-  return 0;
+  return m_audioDev->setChannels(channels);
 }
 
 // set a sampling rate per second
 int Audio::setSamplingRate(int rate)
 {
-#ifdef ALSA
-  m_audioformat.rate = rate;
-#endif
+  if (!EnableSound)
+    return AUDIO_FATAL;
 
-#ifdef ESD
-  m_audiorate = rate;
-#endif
-
-#ifdef OSS
-  if (ioctl(m_audiofd, SNDCTL_DSP_SPEED, &rate) < 0)
-    return -1;
-#endif
-
-#ifdef SUN
-  struct audio_info_t ainfo;
-
-  AUDIO_INITINFO(&ainfo);
-  ainfo.play.sample_rate = rate;
-
-  if (ioctl(m_audiofd, AUDIO_SETINFO, &ainfo) < 0)
-    return -1;
-#endif
-
-  return 0;
-}
-
-// output audio data from the buffer
-int Audio::output(char* buf, int size)
-{
-  int ret;
-
-#ifdef ALSA
-  // setup playback parameters only once
-  if (m_audioformat.rate) {
-    if (snd_pcm_playback_format(m_audiopcm, &m_audioformat) < 0)
-      return -1;
-	m_audioformat.rate = 0;
-  }
-#endif
-  
-#ifdef ESD
-  // open connection only once
-  if (m_audiofd < 0) {
-    m_audiofd = esd_play_stream_fallback(m_audioformat | ESD_STREAM | ESD_PLAY,
-					m_audiorate, NULL, "qvwm");
-	if (m_audiofd < 0)
-	  return -1;
-  }
-#endif
-
-  while (size > 0) {
-#ifdef ALSA
-	ret = snd_pcm_write(m_audiopcm, buf, size);
-#else
-    ret = write(m_audiofd, buf, size);
-#endif
-    if (ret < 0)
-      return -1;
-
-    buf += ret;
-    size -= ret;
-  }
-
-  return 0;
+  return m_audioDev->setSamplingRate(rate);
 }
 
 // output audio stream from the file
 int Audio::outputStream(FILE* fp, int size)
 {
-  int bytes, ret;
-  char buf[BSIZE];
+  int bytes, err;
+  char buf[AUDIO_BSIZE];
+
+  if (!EnableSound)
+    return AUDIO_FATAL;
+
+  if (m_audioDev->prepare())
+    return AUDIO_ERROR;
 
   // output audio data
   while (size > 0) {
-    if (size > BSIZE)
-      bytes = BSIZE;
+    if (size > AUDIO_BSIZE)
+      bytes = AUDIO_BSIZE;
     else
       bytes = size;
 
-    if (fread(buf, bytes, 1, fp) < 1)
-      return AUDIO_BROKEN;
-
-    if (output(buf, bytes) < 0) {
-      ret = -errno;
-#ifdef DEBUG
-      perror("output");
-#endif
-      return ret;
+    if (fread(buf, bytes, 1, fp) < 1) {
+      QvwmError("sound file read error: %s", strerror(errno));
+      return AUDIO_ERROR;
     }
+
+    err = m_audioDev->output(buf, bytes);
+    if (err == AUDIO_ERROR)
+      return err;
 
     size -= bytes;
   }
+
+  m_audioDev->flush();
 
   return 0;
 }

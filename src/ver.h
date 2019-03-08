@@ -1,7 +1,7 @@
 /*
  * ver.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #ifndef _VER_H_
 #define _VER_H_
 
-const char* Version = "1.1.7";
-const char* Codename = "Oho";
+const char* Version = "1.1.11";
+const char* Codename = "Ookayama";
 
 #endif // _VER_H_

@@ -1,7 +1,7 @@
 /*
  * desktop.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
 #include "session.h"
 #include "fbutton.h"
 #include "screen_saver.h"
+#include "remote_cmd.h"
 
 Desktop::Desktop()
 {
@@ -243,8 +244,6 @@ void Desktop::FinishQvwm(Bool reStart)
     return;
   }
 
-  XGrabServer(display);
-
   ASSERT(paging);
 
   /*
@@ -252,15 +251,17 @@ void Desktop::FinishQvwm(Bool reStart)
    */
   paging->PagingProc(Point(0, 0));
 
+  XGrabServer(display);
+
   signal(SIGCHLD, TrapChild2);
   XSetErrorHandler(FinishErrorHandler);
 
   /*
    * Delete all qvwms.
    */
-  List<Qvwm>::Iterator i(&qvwmList);
+  List<Qvwm>::Iterator i1(&qvwmList);
 
-  for (Qvwm* qvWm = i.GetHead(); qvWm; qvWm = i.Remove()) {
+  for (Qvwm* qvWm = i1.GetHead(); qvWm; qvWm = i1.Remove()) {
     XWindowAttributes attr;
     Rect rcOrig = qvWm->GetOrigRect();
 
@@ -334,6 +335,9 @@ void Desktop::FinishQvwm(Bool reStart)
 #ifdef USE_SS
   delete scrSaver;
 #endif
+#ifdef ALLOW_RMTCMD
+  delete remoteCmd;
+#endif
 
   QvImage::Destroy(imgDesktop);
 
@@ -344,14 +348,12 @@ void Desktop::FinishQvwm(Bool reStart)
   XClearWindow(display, root);
 
   if (!reStart) {
-    PlaySound(EndingSound);
+    PlaySound(SystemExitSound);
     XCloseDisplay(display);
     exit(0);
   }
-  else {
-    PlaySound(RestartSound, True);
+  else
     XCloseDisplay(display);
-  }
 }
 
 static void TrapChild2(int sig)
@@ -539,7 +541,8 @@ Taskbar::TaskbarPos Desktop::GetDesktopArea(const Point& pt)
  */
 void Desktop::SetWallPaper()
 {
-  if (strcmp(WallPaper, "Windows98") == 0 ||
+  if (strcmp(WallPaper, "Windows2000") == 0 ||
+      strcmp(WallPaper, "Windows98") == 0 ||
       strcmp(WallPaper, "Windows95") == 0) {
     XSetWindowBackground(display, root, DesktopColor.pixel);
     XClearWindow(display, root);
@@ -579,4 +582,9 @@ void Desktop::CreateAccessories()
     acc->CreateAccessory();
     acc = li.GetNext();
   }
+}
+
+void Desktop::SetFocus()
+{
+  XSetInputFocus(display, topWin, RevertToParent, CurrentTime);
 }

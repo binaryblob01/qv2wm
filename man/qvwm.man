@@ -12,7 +12,7 @@
 .if t .sp .5
 ..
 
-.TH QVWM 1 "19 Feb 2000" "Version 1.1.6"
+.TH QVWM 1 "1 June 2001" "Version 1.1.11"
 
 .SH NAME
 qvwm \- Windows 95/98 like window manager for X11
@@ -34,7 +34,7 @@ it deals with any languages because it is considered with internationalization.
 .TP
 \fB--clientid\fP \fIclient_id\fP
 Specifies the client Id from the previous session.
-It is equivalent to \fB-id\fP or \fB-clientID\fP.
+It is equivalent to \fB-id\fP or \fB-clientId\fP.
 .TP
 \fB--config\fP
 Displays compile options.
@@ -74,6 +74,10 @@ It is equivalent to \fB-v\fP.
 .SH VARIABLE CONFIGURATION
 The following are variables you specifies in configuration file. The value
 in parentheses is default.
+.TP
+\fBAllowRemoteCmd\fP (False)
+Sets whether qvwm allows other processes of the user that starts qvwm
+to send internal commands to it.
 .TP
 \fBAutoRaise\fP (False)
 Sets whether the active window raises on top automatically when ClickToFocus
@@ -118,6 +122,9 @@ Sets the taskbar clock string color.
 \fBCloseButtonMessage\fP ("Close")
 Sets the message of the close button tooltip.
 .TP
+\fBCloseSound\fP (NULL)
+Sets the sound file played back when a window is closed.
+.TP
 \fBCtrlMenuFont\fP (null)
 Sets the font for the control memu.  If this variable is not specified,
 DefaultFont is used.
@@ -149,8 +156,8 @@ If this variable is not specified, the built-in image is used.
 \fBDesktopActiveColor\fP (qvblue)
 Sets the desktop active color for the selected shortcut icon.
 .TP
-\fBDesktopColor\fP (qvgreen)
-Sets the desktop color.  If you set WallPaper to Windows98, the
+\fBDesktopColor\fP (qvroyalblue)
+Sets the desktop color.  If you set WallPaper to Windows2000, the
 desktop is filled with this color.
 .TP
 \fBDialogColor\fP (qvgray)
@@ -166,6 +173,10 @@ Sets the exit dialog background image.
 \fBDialogStringColor\fP (black)
 Sets the exit dialog string color.
 .TP
+\fBDisableDesktopChange\fP (False)
+Sets whether the user cannot move or resize the taskbar, the pager,
+and icons.
+.TP
 \fBDoubleClickRange\fP (5)
 Sets the max distance between two clicks for double click by the dot. 
 (more than 1)
@@ -178,11 +189,19 @@ Sets the max interval between two clicks for double click by the millisecond.
 Sets the resistance needed for moving the frame of a window over the
 edges of the screen.
 .TP
-\fBEndingSound\fP (NULL)
-Sets the sound file when qvwm terminates.
+\fBEnableAlsa\fP (True)
+Sets whether you enable ALSA (Advanced Linux Sound Architecture) if OS
+supports it.
+.TP
+\fBEnableEsd\fP (True)
+Sets whether you enable EsounD if installed.
+.TP
+\fBEnableSound\fP (True)
+Sets whether you enable the sound facility.
 .TP
 \fBExpandSound\fP (NULL)
-Sets the sound file when a window is expanded by QVWM_EXPAND_?? functions.
+Sets the sound file played back when a window is expanded by
+QVWM_EXPAND_?? functions.
 .TP
 \fBFocusOnMap\fP (False)
 Sets whether a newly mapped window is activated automatically when
@@ -280,7 +299,7 @@ button until clicking it again.
 Sets the message of the maximize button tooltip.
 .TP
 \fBMaximizeSound\fP (NULL)
-Sets the sound file when a window is maximized.
+Sets the sound file played back when a window is maximized.
 .TP
 \fBMenuActiveColor\fP (qvblue)
 Sets the menu active color.
@@ -290,6 +309,9 @@ Sets the menu active background image.
 .TP
 \fBMenuColor\fP (qvgray)
 Sets the menu color.
+.TP
+\fBMenuCommandSound\fP (NULL)
+Sets the sound file played back when a menu item is clicked.
 .TP
 \fBMenuImage\fP ("")
 Sets the menu inactive background image.
@@ -314,7 +336,7 @@ Sets the color for non-active miniature window in the pager.
 Sets the message of the minimize button tooltip.
 .TP
 \fBMinimizeSound\fP (NULL)
-Sets the sound file when a window is minimized.
+Sets the sound file played back when a window is minimized.
 .TP
 \fBNoDesktopFocus\fP (False)
 Sets whether you allow a focus to move the desktop when ClickToFocus
@@ -347,8 +369,8 @@ Sets whether you move a window using full-drag style.
 \fBOpaqueResize\fP (True)
 Sets whether you resize a window using full-drag style.
 .TP
-\fBOpeningSound\fP (NULL)
-Sets the sound file when qvwm starts.
+\fBOpenSound\fP (NULL)
+Sets the sound file played back when an application is started.
 .TP
 \fBPagerActiveColor\fP (qvdarkgray)
 Sets the pager active page color.
@@ -365,25 +387,33 @@ Sets the size and position of the pager by the following format.
 \fBPagerImage\fP ("")
 Sets the pager background image.
 .TP
-\fBPagingResistance\fP (200)
-The page switches to the next page if you wait for this time, when you move
-mouse cursor to edges of the screen. (more than 0)
+\fBPagerSound\fP (NULL)
+Sets the sound file played back when a virtual page is switched by
+clicking the pager.
 .TP
 \fBPagingBeltSize\fP (2)
 Sets the area of edges of the screen where the page switches if you move 
 mouse cursor and wait for the time of PagingResistance. If this value is 0,
 switching page does not happen when you move mouse cursor to the edges of
-screen. (more than 0)
+screen. (0 or more than 0)
 .TP
 \fBPagingMovement\fP (100)
 Sets the movement on switching a page by a percentage to the size of
-the screen. (more than 0)
+the screen. (0 or more than 0)
+.TP
+\fBPagingResistance\fP (200)
+The page switches to the next page if you wait for this time, when you move
+mouse cursor to edges of the screen. (0 or more than 0)
 .TP
 \fBPagingSize\fP (1x1)
 Sets the size of virtual screen by the page unit by the following format.
 .EX
 <width>{xX}<height>
 .EE
+.TP
+\fBPagingSound\fP (NULL)
+Sets the sound file played back when a virtual page is switched by
+moving the mouse cursor or executing a shortcut key.
 .TP
 \fBPagingSpeed\fP (1)
 Sets how smoothly qvwm moves a virtual page when paging.  Bigger this
@@ -395,19 +425,21 @@ Sets the directories where you locate the image files, separated by ':'.
 \fBRestoreButtonMessage\fP ("Restore")
 Sets the message of the restore button tooltip.
 .TP
+\fBRestoreDownSound\fP (NULL)
+Sets the sound file played back when a window is restored from the
+maximized state.
+.TP
 \fBRestoreMinimize\fP (False)
 Sets whether a window is minimized when the window is active and the
 corresponding taskbar button is pushed.
 .TP
-\fBRestoreSound\fP (NULL)
-Sets the sound file when a window is restored.
+\fBRestoreUpSound\fP (NULL)
+Sets the sound file played back when a window is restored from the
+minimized state.
 .TP
 \fBRestartOnFailure\fP (True)
 Sets whether qvwm automatically restarts on segmentation fault or bus
 error.
-.TP
-\fBRestartSound\fP (NULL)
-Sets the sound file when qvwm restarts.
 .TP
 \fBScreenSaver\fP ("xlock")
 Sets your favorite screen saver program.
@@ -445,7 +477,7 @@ Sets the string of the start button.
 Sets the font for the start memu.  If this variable is not specified,
 DefaultFont is used.
 .TP
-\fBStartMenuLogoColor\fP (qvdarkgray)
+\fBStartMenuLogoColor\fP (black)
 Sets the background color of the logo area in the start menu.
 .TP
 \fBStartMenuLogoImage\fP ("")
@@ -463,6 +495,15 @@ Sets the task switcher background image.
 \fBSwitcherStringColor\fP (black)
 Sets the task switcher string color.
 .TP
+\fBSystemExitSound\fP (NULL)
+Sets the sound file played back when qvwm terminates.
+.TP
+\fBSystemRestartSound\fP (NULL)
+Sets the sound file played back when qvwm restarts.
+.TP
+\fBSystemStartSound\fP (NULL)
+Sets the sound file played back when qvwm starts.
+.TP
 \fBTaskbarAutoHide\fP (False)
 Sets whether qvwm hides the taskbar automatically.
 .TP
@@ -473,6 +514,10 @@ DefaultFont is used.
 \fBTaskbarButtonHeight\fP (22)
 Sets the taskbar button height.  This value affects the taskbar
 height, the start button height and the taskbar box height.
+.TP
+\fBTaskbarButtonInScr\fP (False)
+Sets whether the taskbar shows only the taskbar buttons for windows in
+the current screen.
 .TP
 \fBTaskbarColor\fP (qvgray)
 Sets the taskbar color.
@@ -586,6 +631,129 @@ meaning: Windows98 means the standard background (DesktopColor); "" means
 that background doesn't change.
 
 
+.SH INTERNAL COMMAND
+The followings are internal commands available for menus and shortcuts.
+[menu], [win], [icon], and [shortcut] mean that the command is
+available in menus, the control menu of window, the menu of icon, and
+shortcut keys, respectively.
+
+Window Manager
+.EX
+QVWM_EXIT                  exit qvwm
+QVWM_RESTART               restart qvwm
+.EE
+Window
+.EX
+QVWM_MOVE                  move a window [win]
+QVWM_RESIZE                resize a window size [win]
+QVWM_MAXIMIZE              maximize a window [win]
+QVWM_MINIMIZE              minimize a window [win]
+QVWM_RESTORE               restore a window size [win]
+QVWM_EXPAND                expand a window to all directions [win]
+QVWM_EXPAND_LEFT           expand a window to a left direction [win]
+QVWM_EXPAND_RIGHT          expand a window to a right direction [win]
+QVWM_EXPAND_UP             expand a window to an up direction [win]
+QVWM_EXPAND_DOWN           expand a window to a down direction [win]
+QVWM_RAISE                 raise a window [win]
+QVWM_LOWER                 lower a window [win]
+QVWM_CLOSE                 close a window (recommend) [win]
+QVWM_KILL                  close a window forcely [win]
+QVWM_TOGGLE_ONTOP          toggle switch of an ONTOP attribute [win]
+QVWM_TOGGLE_STICKY         toggle switch of a STICKY attribute [win]
+.EE
+Window Focus
+.EX
+QVWM_SWITCH_TASK           switch an active window [shortcut]
+QVWM_SWITCH_TASK_BACK      switch back an active window [shortcut]
+QVWM_CHANGE_WIN            change an active window
+QVWM_CHANGE_WIN_BACK       change back an active window
+QVWM_CHANGE_WIN_INSCR      change an active window within a screen
+QVWM_CHANGE_WIN_BACK_INSCR change back an active window in a screen
+QVWM_DESKTOP_FOCUS         make the desktop active
+.EE
+Window Rearrangement
+.EX
+QVWM_OVERLAP               overlap all windows
+QVWM_OVERLAP_INSCR         overlap windows within the screen
+QVWM_TILE_HORZ             horizontally tile all windows
+QVWM_TILE_HORZ_INSCR       horizontally tile windows within the screen
+QVWM_TILE_VERT             vertically tile all windows
+QVWM_TILE_VERT_INSCR       vertically tile windows within the screen
+QVWM_MINIMIZE_ALL          minimize all windows
+QVWM_MINIMIZE_ALL_INSCR    minimize windows within the screen
+QVWM_RESTORE_ALL           restore all windows
+QVWM_RESTORE_ALL_INSCR     restore windows within the screen
+QVWM_CLOSE_ALL             close all windows
+QVWM_CLOSE_ALL_INSCR       close windows within the screen
+.EE
+Menu
+.EX
+QVWM_POPUP_START_MENU      pop up the start menu
+QVWM_POPUP_DESKTOP_MENU    pop up the desktop menu
+QVWM_POPUP_MENU            pop up a window ctrl menu
+QVWM_POPDOWN_MENU          pop down a menu [menu]
+QVWM_POPDOWN_ALL_MENU      pop down all menus
+.EE
+Virtual Screen
+.EX
+QVWM_UP_PAGING             switch to the up page
+QVWM_DOWN_PAGING           switch to the down page
+QVWM_LEFT_PAGING           switch to the left page
+QVWM_RIGHT_PAGING          switch to the right page
+.EE
+Taskbar
+.EX
+QVWM_BOTTOM                move the taskbar to bottom
+QVWM_TOP                   move the taskbar to top
+QVWM_LEFT                  move the taskbar to left
+QVWM_RIGHT                 move the taskbar to right
+QVWM_TOGGLE_AUTOHIDE       toggle switch of TaskbarAutoHide
+QVWM_ENABLE_AUTOHIDE       enable TaskbarAutoHide
+QVWM_DISABLE_AUTOHIDE      disable TaskbarAutoHide
+QVWM_TOGGLE_TASKBAR        toggle switch of the taskbar show/hide
+QVWM_ENABLE_TASKBAR        show the taskbar
+QVWM_DISABLE_TASKBAR       hide the taskbar
+QVWM_SHOW_TASKBAR          appear the taskbar when TaskbarAutoHide
+QVWM_HIDE_TASKBAR          disappear the taskbar when TaskbarAutoHide
+.EE
+Pager
+.EX
+QVWM_TOGGLE_PAGER          toggle switch of the pager show/hide
+QVWM_ENABLE_PAGER          show the pager
+QVWM_DISABLE_PAGER         hide the pager
+.EE
+Icon
+.EX
+QVWM_LINEUP_ICON           line up shortcut icons
+QVWM_EXEC_ICON             execute the icon [icon]
+QVWM_DELETE_ICON           delete the icon [icon]
+.EE
+Others
+.EX
+QVWM_NONE                  no action
+QVWM_SEPARATOR             sepatator(no action) [menu]
+.EE
+
+
+.SH EXTERNAL COMMAND
+You can specify one of some prefixes before an external command.
+.IP EXEC 8
+Replace qvwm with the external command.  Use to switch qvwm to another
+window manager.
+.EX
+ex) "EXEC twm"
+.EE
+.IP PAGE[<x>,<y>,<identifier>]
+Locate the window created by the external command in page(x, y).
+Specify the title name, resource name, or resource class of the window
+as \fIidentifier\fP.
+.EX
+ex) "PAGE[1, 1, XEyes] xeyes"
+.EE
+.IP PAGECUR[<identifier>]
+Locate the window in the page where the external command was executed.
+
+
 .SH STARTUP
 You can specify external commands when qvwm starts.
 .EX
@@ -614,59 +782,10 @@ item   image
 include " by writing \\".  A character following to \\& is a shortcut key
 for the item and displayed with an underscore.
 \fIimage\fP is specified by enclosing the image name of the left of menus
-with "". In the first format, \fIaction\fP is specified external command
-or qvwm internal function. If program is specified as action, enclose its
-name with "". You can specify the followings as qvwm internal functions:
-.EX
-QVWM_MAXIMIZE              maximize a window
-QVWM_MINIMIZE              minimize a window
-QVWM_RESTORE               restore a window size
-QVWM_MOVE                  move a window
-QVWM_RESIZE                resize a window size
-QVWM_RAISE                 raise a window
-QVWM_LOWER                 lower a window
-QVWM_EXPAND                expand a window to all directions
-QVWM_EXPAND_LEFT           expand a window to a left direction
-QVWM_EXPAND_RIGHT          expand a window to a right direction
-QVWM_EXPAND_UP             expand a window to an up direction
-QVWM_EXPAND_DOWN           expand a window to a down direction
-QVWM_CLOSE                 close a window (recommend)
-QVWM_KILL                  close a window forcely
-QVWM_EXIT                  exit qvwm
-QVWM_RESTART               restart qvwm
-QVWM_LINEUP_ICON           line up shortcut icons
-QVWM_SWITCH_TASK           switch an active window
-QVWM_SWITCH_TASK_BACK      switch back an active window
-QVWM_CHANGE_WIN            change an active window
-QVWM_CHANGE_WIN_BACK       change back an active window
-QVWM_CHANGE_WIN_INSCR      change an active window within a screen
-QVWM_CHANGE_WIN_BACK_INSCR change back an active window in a screen
-QVWM_DESKTOP_FOCUS         make the desktop active
-QVWM_POPUP_START_MENU      pop up the start menu
-QVWM_POPUP_DESKTOP_MENU    pop up the desktop menu
-QVWM_POPUP_MENU            pop up a window ctrl menu
-QVWM_POPDOWN_MENU          pop down a menu
-QVWM_POPDOWN_ALL_MENU      pop down all menus
-QVWM_BOTTOM                move the taskbar to bottom
-QVWM_LEFT                  move the taskbar to left
-QVWM_RIGHT                 move the taskbar to right
-QVWM_TOP                   move the taskbar to top
-QVWM_DOWN_PAGING           switch to the down page
-QVWM_LEFT_PAGING           switch to the left page
-QVWM_RIGHT_PAGING          switch to the right page
-QVWM_UP_PAGING             switch to the up page
-QVWM_OVERLAP               rearrange windows with overlapping
-QVWM_TILE_HORZ             rearrange windows with horizontally-tiling
-QVWM_TILE_VERT             rearrange windows with vertically-tiling
-QVWM_MINIMIZE_ALL          minimize all windows within a screen
-QVWM_TOGGLE_ONTOP          toggle switch of an ONTOP attribute
-QVWM_TOGGLE_AUTOHIDE       toggle switch of TaskbarAutoHide
-QVWM_TOGGLE_STICKY         toggle switch of a STICKY attribute
-QVWM_SHOW_TASKBAR          appear the taskbar when TaskbarAutoHide
-QVWM_HIDE_TASKBAR          disappear the taskbar when TaskbarAutoHide
-QVWM_SEPARATOR             sepatator(no action)
-QVWM_NONE                  no action
-.EE
+with "". In the first format, \fIaction\fP is specified by an external
+command or an internal command. If program is specified as action,
+enclose its name with "".
+.PP
 The second format is used when you want to expose child menu from the item.
 The part enclosed with + and - is the child menu.
 .PP
@@ -699,7 +818,7 @@ name   image   action   [x][, y]
 \fIimage\fP is specified by enclosing the image name for shortcut icon with 
 "". The image must locate on IMGDIR directory which you specify in 
 'Config.tmpl' or on ImagePath directory in .qvwmrc. \fIaction\fP is specified
-by the qvwm internal function or external command executed on double-clicking 
+by an internal command or an external command executed on double-clicking 
 shortcut icon. If either \fIx\fP or \fIy\fP is specified, qvwm locates 
 the shortcut
 in the position. When you begin x or y with '!', instead of specifying x or y 
@@ -753,6 +872,7 @@ The window is minimized on initializating.
 .IP FOCUS_ON_CLICK
 The window is activated only when clicked.
 
+
 .SH EXIT DIALOG CONFIGURATION
 You can configure exit dialog as follows:
 .EX
@@ -769,9 +889,10 @@ RadioButton       radio button
 StaticText        string for discription
 Title             string of title bar
 .EE
-\fIaction\fP is meaningful in case of radio button. Specify qvwm internal 
-function above or external command as action.  You can use \\& for a shortcut 
-key in a string after OKButton, CancelButton and HelpButton.
+\fIaction\fP is meaningful in case of radio button. Specify an internal 
+command above or an external command as action.  You can use \\& for a
+shortcut key in a string after OKButton, CancelButton and HelpButton.
+
 
 .SH SHORTCUT KEY CONFIGURATION
 You can configure shortcut keys as follows:
@@ -794,7 +915,8 @@ Meta        meta key
 Mod1-Mod5   no use (obsolete)
 None        no modifier
 .EE
-Specify a qvwm internal function or extenal command as \fIaction\fP.
+Specify an internal command or an extenal command as \fIaction\fP.
+
 
 .SH INDICATOR CONFIGURATION
 You can display a 16x16 window called indicator on the left of the clock
@@ -807,6 +929,7 @@ Specify the title name, resource name, or resource class of a window for
 an indicator as \fIidentifier\fP. The window created by \fIprogram\fP
 becomes an indicator. (But the second or later window is shown as a normal
 window in the desktop.)
+
 
 .SH ACCESSORY CONFIGURATION
 You can put accessories, your favorite images including animation
@@ -824,12 +947,14 @@ icons.  OnTop means that the image is put above all windows and
 shortcut icons.  Application means that the image has a window frame
 and you can move it.
 
+
 .SH INCLUDE STATEMENT
 You can read external files by using include statement in a
 configuration file.
 .EX
 ex) include /home/kourai/.qvwmrc.local
 .EE
+
 
 .SH PATH NAME
 You can use ~ for your home directory, ~user for user's home
@@ -839,30 +964,28 @@ ex) include $HOME/.qvwmrc.local
     IconPath = ~/lib/qvwm/pixmaps
 .EE
 
-.SH EXTERNAL COMMAND
-You can specify one of some prefixes before an external command.
-.IP EXEC 8
-Replace qvwm with the external command.  Use to switch qvwm to another
-window manager.
-.EX
-ex) "EXEC twm"
-.EE
-.IP PAGE[<x>,<y>,<identifier>]
-Locate the window created by the external command in page(x, y).
-Specify the title name, resource name, or resource class of the window
-as \fIidentifier\fP.
-.EX
-ex) "PAGE[1, 1, XEyes] xeyes"
-.EE
-.IP PAGECUR[<identifier>]
-Locate the window in the page where the external command was executed.
 
-.SH Supported image formats
+.SH SUPPORTED IMAGE FORMATS
 Qvwm supports xpm format(extension .xpm).  If you use Imlib, qvwm
 also supports formats that Imlib supports.  Also, qvwm supports
 animation files for qvwm(extension .ani).  Because the animation files 
 contain some images as it is, an animation file is supported if qvwm
 supports all formats of the images in the file.
+
+
+.SH REMOTE COMMAND
+The user can make qvwm execute internal commands by sending commands
+to /tmp/qvwm-\fIdisplay_name\fP.  This facility is valid only when
+qvwm is compiled with the remote command support and the
+AllowRemoteCmd variable is True.  The users that can send commands are
+only the user that starts qvwm and the root user.  
+.PP
+The command consists of strings of internal commands, which is devided
+by '\n'.  For example, if you send the QVWM_EXIT command, execute
+.EX
+echo "QVWM_EXIT" > /tmp/qvwm-:0.0
+.EX
+
 
 .SH FILE
 .IP $HOME/.qvwmrc 28
@@ -871,11 +994,14 @@ user configuration file
 user theme configuration file (conventionally included in .qvwmrc)
 .IP <QVWMDIR>/system.qvwmrc
 system configuration file (<QVWMDIR> is the directory specified at compile.)
+.IP /tmp/qvwm-\fIdisplay_name\fP
+FIFO for sending remote commands
 
 .SH WARNING
 Though qvwm's official version has been released, it may be not stable 
 enough in some environments.  I am not responsible for any damages arising
 out of the use of qvwm.
+
 
 .SH AUTHOR
 Kenichi Kourai (kourai@qvwm.org)

@@ -1,7 +1,7 @@
 /*
  * audio.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,64 +21,54 @@
 #ifndef AUDIO_H_
 #define AUDIO_H_
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#ifdef USE_ALSA
-#include <sys/asoundlib.h>
-#endif
-
-#ifdef USE_ESD
-#include <esd.h>
-#endif
-
 #ifndef SEEK_CUR
 #define SEEK_CUR 1
 #endif
 
-#define AUDIO_NOFILE	1	// File not found
-#define AUDIO_BROKEN	2	// File is broken
-#define AUDIO_BADFMT	3	// Bad format
-#define AUDIO_UNSUPP	4	// Unsupported format
+// transfer size at a time
+#define AUDIO_BSIZE 4096
 
-#define BSIZE 4096		// transfer size at a time
+// return value
+#define AUDIO_SUCCESS  0
+#define AUDIO_ERROR   -1
+#define AUDIO_NOFILE  -2
+#define AUDIO_FATAL   -3
+
+class Audiodev;
 
 class Audio {
 private:
-  char* m_audiodev;
-  int m_audiofd;
-#ifdef USE_ALSA
-  snd_pcm_t *m_audiopcm;
-  snd_pcm_format_t m_audioformat;
-#endif
-#ifdef USE_ESD
-  esd_format_t m_audioformat;
-  int m_audiorate;
-#endif
+  Audiodev* m_audioDev;
 
 protected:
-  enum { EN_NONE = 0, EN_ULAW, EN_ALAW, EN_LINEAR };
-
-  int getLWord(FILE* fp);	// 4 bytes of little endian
-  int getBWord(FILE* fp);	// 4 bytes of big endian
+  int getLWord(FILE* fp, long *word);	// 4 bytes of little endian
+  int getBWord(FILE* fp, long *word);	// 4 bytes of big endian
   int skipWord(FILE* fp);
 
-  short getLHalf(FILE* fp);	// 2 bytes of little endian
-  short getBHalf(FILE* fp);	// 2 bytes of big endian
+  int getLHalf(FILE* fp, short *half);	// 2 bytes of little endian
+  int getBHalf(FILE* fp, short *half);	// 2 bytes of big endian
   int skipHalf(FILE* fp);
 
-protected:
-  int openDevice();
-  int closeDevice();
-  int setFormat(int bits, int encoding = EN_NONE);
-  int setChannels(int channels);
-  int setSamplingRate(int rate);
-  int output(char* buf, int size);
   int outputStream(FILE* fp, int size);
 
 public:
-  Audio(char* audiodev) : m_audiodev(audiodev), m_audiofd(-1) {}
+  enum {
+    EN_ULAW,     // u-law
+    EN_ALAW,     // A-law
+    EN_ULINEAR,  // unsigned linear
+    EN_SLINEAR   // signed linear
+  };
+
+public:
+  Audio(char* audiodev);
+  ~Audio();
+
+  int openDevice();
+  int closeDevice();
+
+  int setFormat(int bits, int encoding);
+  int setChannels(int channels);
+  int setSamplingRate(int rate);
 
   virtual int Play(char* file);
 };

@@ -1,5 +1,8 @@
 BUGS
 ----
+- Some dialogs of an on-top window are put behind the main window.
+- Session management fails (at gnome-session).
+- Netscape does not response to ButtonPress after saving link twice.
 - Exist double free.
 - With netscape maximized, newly opened another window of netscape
   become the normal window of the maximized size.

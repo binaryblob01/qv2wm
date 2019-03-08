@@ -1,7 +1,7 @@
 /*
  * desktop.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,12 +60,15 @@ public:
   void FinishQvwm(Bool reStart);
   void RecalcAllWindows();
   void ChangeFocusToCursor();
+  void SetFocus();
 
   // Window rearrangement
-  void Overlap(const Rect& vt);
-  void TileHorz(const Rect& vt);
-  void TileVert(const Rect& vt);
-  void MinimizeAll(const Rect& vt);
+  void Overlap(Bool all, const Rect& vt);
+  void TileHorz(Bool all, const Rect& vt);
+  void TileVert(Bool all, const Rect& vt);
+  void MinimizeAll(Bool all, const Rect& vt = Rect());
+  void RestoreAll(Bool all, const Rect& vt = Rect());
+  void CloseAll(Bool all, const Rect& vt = Rect());
 
   void CreateIcons();
   void RedrawAllIcons();

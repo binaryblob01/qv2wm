@@ -1,7 +1,7 @@
 /*
  * rearrange.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,14 +38,17 @@
  * Overlap --
  *   Rearrange windows in this screen in the overlapping form.
  */
-void Desktop::Overlap(const Rect& vt)
+void Desktop::Overlap(Bool all, const Rect& vt)
 {
   List<Qvwm>::Iterator i(&qvwmList);
   Point topLeft(rcScreen.x, rcScreen.y);
+  int unit = Qvwm::TITLE_HEIGHT + Qvwm::TOP_BORDER;
+  int num = 0;
 
   for (Qvwm* qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
-    if (!qvWm->CheckFlags(STICKY) && qvWm->CheckMapped() &&
-	Intersect(qvWm->GetRect(), vt)) {
+    if (qvWm->CheckMapped() &&
+	(all ||
+	 (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt)))) {
       XMoveWindow(display, qvWm->GetFrameWin(), topLeft.x, topLeft.y);
       qvWm->RaiseWindow(True);
 
@@ -60,8 +63,16 @@ void Desktop::Overlap(const Rect& vt)
 	qvWm->mini->MoveMiniature(pager->ConvertToPagerPos(pt));
       }
 
-      topLeft += Point(Qvwm::TITLE_HEIGHT + Qvwm::TOP_BORDER,
-		       Qvwm::TITLE_HEIGHT + Qvwm::TOP_BORDER);
+      topLeft += Point(unit, unit);
+
+      if (topLeft.x > rcScreen.width / 2 || topLeft.y > rcScreen.height / 2) {
+	num++;
+	topLeft = Point(rcScreen.x + unit * num, rcScreen.y);
+	if (topLeft.x > rcScreen.width / 2) {
+	  topLeft.x = rcScreen.x;
+	  num = 0;
+	}
+      }
     }
   }
 
@@ -75,7 +86,7 @@ void Desktop::Overlap(const Rect& vt)
  * TileHorz --
  *   Rearrange windows in this screen in the horizontally-tiling form.
  */
-void Desktop::TileHorz(const Rect& vt)
+void Desktop::TileHorz(Bool all, const Rect& vt)
 {
   List<Qvwm>::Iterator i(&qvwmList);
   Qvwm* qvWm;
@@ -84,13 +95,17 @@ void Desktop::TileHorz(const Rect& vt)
 
   // count non-sticky window in this screen
   for (qvWm = i.GetHead(); qvWm; qvWm = i.GetNext())
-    if (!qvWm->CheckFlags(STICKY) && qvWm->CheckMapped() &&
-	Intersect(qvWm->GetRect(), vt))
+    if (qvWm->CheckMapped() &&
+	(all || (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt))))
       num++;
 
+  if (num == 0)
+    return;
+
   for (qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
-    if (!qvWm->CheckFlags(STICKY) && qvWm->CheckMapped() &&
-	Intersect(qvWm->GetRect(), vt)) {
+    if (qvWm->CheckMapped() &&
+	(all ||
+	 (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt)))) {
       Rect rect(topLeft.x, topLeft.y, vt.width / num, vt.height);
       XSizeHints hints = qvWm->GetSizeHints();
       Rect rcFix = qvWm->GetFixSize(rect, hints.max_width, hints.max_height,
@@ -112,7 +127,7 @@ void Desktop::TileHorz(const Rect& vt)
  * TileVert --
  *   Rearrange windows in this screen in the vertically-tiling form.
  */
-void Desktop::TileVert(const Rect& vt)
+void Desktop::TileVert(Bool all, const Rect& vt)
 {
   List<Qvwm>::Iterator i(&qvwmList);
   Qvwm* qvWm;
@@ -121,13 +136,17 @@ void Desktop::TileVert(const Rect& vt)
 
   // count non-sticky window in this screen
   for (qvWm = i.GetHead(); qvWm; qvWm = i.GetNext())
-    if (!qvWm->CheckFlags(STICKY) && qvWm->CheckMapped() &&
-	Intersect(qvWm->GetRect(), vt))
+    if (qvWm->CheckMapped() &&
+	(all || (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt))))
       num++;
 
+  if (num == 0)
+    return;
+
   for (qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
-    if (!qvWm->CheckFlags(STICKY) && qvWm->CheckMapped() &&
-	Intersect(qvWm->GetRect(), vt)) {
+    if (qvWm->CheckMapped() &&
+	(all ||
+	 (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt)))) {
       Rect rect(topLeft.x, topLeft.y, vt.width, vt.height / num);
       XSizeHints hints = qvWm->GetSizeHints();
       Rect rcFix = qvWm->GetFixSize(rect, hints.max_width, hints.max_height,
@@ -145,15 +164,38 @@ void Desktop::TileVert(const Rect& vt)
     taskBar->RaiseTaskbar();
 }
 
-void Desktop::MinimizeAll(const Rect& vt)
+void Desktop::MinimizeAll(Bool all, const Rect& vt)
 {
   List<Qvwm>::Iterator i(&qvwmList);
 
   rootQvwm->SetFocus();
 
   for (Qvwm* qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
-    if (!qvWm->CheckFlags(NO_TBUTTON | STICKY) && qvWm->CheckMapped() &&
-	Intersect(qvWm->GetRect(), vt))
-      qvWm->MinimizeWindow(False, False);
+    if (qvWm->CheckMapped() && !qvWm->CheckFlags(NO_TBUTTON) &&
+	(all || (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt))))
+      qvWm->MinimizeWindow(True, False);
+  }
+}
+
+void Desktop::RestoreAll(Bool all, const Rect& vt)
+{
+  List<Qvwm>::Iterator i(&qvwmList);
+
+  for (Qvwm* qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
+    if (!qvWm->CheckMapped() &&
+	(all || (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt))))
+      qvWm->RestoreWindow(True, False);
+  }
+}
+
+void Desktop::CloseAll(Bool all, const Rect& vt)
+{
+  List<Qvwm>::Iterator i(&qvwmList);
+
+  rootQvwm->SetFocus();
+
+  for (Qvwm* qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
+    if (all || (!qvWm->CheckFlags(STICKY) && Intersect(qvWm->GetRect(), vt)))
+      qvWm->CloseWindow();
   }
 }

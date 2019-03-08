@@ -1,7 +1,7 @@
 /*
  * util.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,68 +23,23 @@
 
 #include "misc.h"
 #include "image.h"
+#include "function.h"
 
 /*
- * Qvwm function number.
+ * Size and bitmask from GetGeometry().
  */
-enum FuncNumber {
-  Q_NONE,
-  Q_SEPARATOR,
-  Q_DIR,
-  Q_EXEC,
-  Q_RESTORE,
-  Q_MOVE,
-  Q_RESIZE,
-  Q_MINIMIZE,
-  Q_MAXIMIZE,
-  Q_EXPAND,
-  Q_EXPAND_LEFT,
-  Q_EXPAND_RIGHT,
-  Q_EXPAND_UP,
-  Q_EXPAND_DOWN,
-  Q_CLOSE,
-  Q_KILL,
-  Q_EXIT,
-  Q_BOTTOM,
-  Q_TOP,
-  Q_LEFT,
-  Q_RIGHT,
-  Q_RESTART,
-  Q_CHANGE_WINDOW,
-  Q_CHANGE_WINDOW_BACK,
-  Q_CHANGE_WINDOW_INSCR,
-  Q_CHANGE_WINDOW_BACK_INSCR,
-  Q_SWITCH_TASK,
-  Q_SWITCH_TASK_BACK,
-  Q_POPUP_START_MENU,
-  Q_POPUP_DESKTOP_MENU,
-  Q_POPUP_MENU,
-  Q_POPDOWN_MENU,
-  Q_POPDOWN_ALL_MENU,
-  Q_UP_FOCUS,
-  Q_DOWN_FOCUS,
-  Q_RIGHT_FOCUS,
-  Q_LEFT_FOCUS,
-  Q_ACTION,
-  Q_LEFT_PAGING,
-  Q_RIGHT_PAGING,
-  Q_UP_PAGING,
-  Q_DOWN_PAGING,
-  Q_LINEUP_ICON,
-  Q_OVERLAP,
-  Q_TILE_HORZ,
-  Q_TILE_VERT,
-  Q_MINIMIZE_ALL,
-  Q_EXEC_ICON,
-  Q_DELETE_ICON,
-  Q_RAISE,
-  Q_LOWER,
-  Q_TOGGLE_ONTOP,
-  Q_TOGGLE_STICKY,
-  Q_TOGGLE_AUTOHIDE,
-  Q_DESKTOP_FOCUS,
-  Q_SHOW_TASKBAR,
-  Q_HIDE_TASKBAR
+class InternGeom {
+public:
+  Rect rc;
+  Point gravity;
+  int bitmask;
+
+public:
+  InternGeom() {}
+  InternGeom(int x, int y, unsigned int width, unsigned int height,
+	     const Point& grav)
+    : rc(Rect(x, y, width, height)), gravity(grav),
+      bitmask(XValue|YValue|WidthValue|HeightValue) {}
 };
 
 /*
@@ -124,6 +79,7 @@ public:
   QvImage* small_img;
   char* large_file;
   QvImage* large_img;
+  InternGeom geom;
 
   AppAttr() : flags(0), small_file(NULL), small_img(NULL),
               large_file(NULL), large_img(NULL) {}
@@ -142,21 +98,6 @@ struct KeyMod
 {
   char* str;
   unsigned int mask;
-};
-
-/*
- * Size and bitmask from GetGeometry().
- */
-class InternGeom {
-public:
-  Rect rc;
-  Point gravity;
-
-public:
-  InternGeom() {}
-  InternGeom(int x, int y, unsigned int width, unsigned int height,
-	     const Point& grav)
-    : rc(Rect(x, y, width, height)), gravity(grav) {}
 };
 
 /*
@@ -236,6 +177,10 @@ extern void DrawRealString(Window w, XFontSet fs, GC gc, int x, int y,
 extern void PlaySound(char* file, Bool sync = False);
 extern Bool IsPointerInWindow(const Point& ptRoot);
 extern int CreateColor(unsigned short red, unsigned short green,
-		       unsigned short blue, XColor* color);
+		       unsigned short blue, XColor* color,
+		       XColor* substitute = NULL, const char* comment = NULL);
+Bool SetGeometry(char* str, InternGeom* geom);
+void SetDisplayEnv(const char* displayName);
+int GetXColorFromName(const char* str, XColor* color);
 
 #endif // _UTIL_H_

@@ -1,7 +1,7 @@
 /*
  * qvwm.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,109 +97,11 @@ Qvwm::Qvwm(Window w, Bool usrPos)
   Mwm::GetHints(this);
   GetWindowClassHints();
   FetchWMProtocols();
-  
-  /*
-   * Set frame attribute.
-   */
-  Window tWin;
-
-  if (XGetTransientForHint(display, w, &tWin)) {
-    if (XFindContext(display, tWin, context, (caddr_t*)&qvMain) == XCSUCCESS) {
-      qvMain->trList.InsertTail(this);
-      if (qvMain->CheckFlags(ONTOP) && !CheckFlags(ONTOP)) {
-	SetFlags(ONTOP);
-	desktop.GetOnTopList().InsertTail(this);
-	Gnome::ChangeLayer(this, WIN_LAYER_ONTOP);
-      }
-    }
-    else
-      qvMain = NULL;
-
-    SetFlags(TRANSIENT);
-    ResetFlags(CTRL_MENU | BORDER_EDGE | BUTTON1 | BUTTON2 | BUTTON3);
-  }
-  else {
-    qvMain = NULL;           // meaning this window itself is a main window
-    ResetFlags(TRANSIENT);
-  }
+  GetTransientForHint();
 
   Gnome::SetInitStates(this);
 
-  /*
-   * Preserve original border width and set border width to 0.
-   */
-  XWindowAttributes attr;
-
-  XGetWindowAttributes(display, w, &attr);
-  bwOrig = attr.border_width;
-  XSetWindowBorderWidth(display, w, 0);
-
-#ifdef USE_XSMP
-  /*
-   * Restore properties and attributes from the previous session
-   */
-  GetSMClientId(); // initialize smClientId
-  GetWMRole(); // initialize wmRole
-  int ax, ay, aw, ah;
-  if (session->SearchProto(smClientId, wmRole,
-			   classHints.res_class,
-			   classHints.res_name,
-			   name, &ax, &ay, &aw, &ah)) {
-    usrPos = True; // force place
-    attr.x = ax;
-    attr.y = ay;
-    attr.width = aw;
-    attr.height = ah;
-  }
-#endif // USE_XSMP
-
-  Point pageoff;
-  ExecPending* pending = ExecPending::LookInList(name, classHints);
-
-  if (pending) {
-    pageoff = pending->GetPageOff();
-    ExecPending::m_pendingList.Remove(pending);
-    delete pending;
-  }
-  else
-    pageoff = paging->origin;
-
-  ASSERT(paging);
-  /*
-   * Calculate the window position.
-   */
-  if (usrPos || (flags & (TRANSIENT | FIXED_POS)) ||
-      (hints.flags & USPosition)) {
-    if (CheckFlags(STICKY))
-      rcOrig = Rect(attr.x, attr.y, attr.width, attr.height);
-    else
-      rcOrig = Rect(attr.x + pageoff.x, attr.y + pageoff.y,
-		    attr.width, attr.height);
-    CalcWindowPos(rcOrig);
-  }
-  else {
-    int borderWidth, topBorder, titleHeight, titleEdge;
-
-    GetBorderAndTitle(borderWidth, topBorder, titleHeight, titleEdge);
-
-    rc.width = attr.width + borderWidth * 2;
-    rc.height = attr.height + borderWidth + topBorder + titleHeight
-      + titleEdge;
-
-    Point pt = desktop.GetNextPlace(Dim(rc.width, rc.height), pageoff);
-
-    rc.x = pt.x;
-    rc.y = pt.y;
-
-    if (CheckFlags(STICKY))
-      rcOrig = Rect(rc.x - rcScreen.x - pageoff.x,
-		    rc.y - rcScreen.y - pageoff.y,
-		    attr.width,
-		    attr.height);
-    else
-      rcOrig = Rect(rc.x - rcScreen.x, rc.y - rcScreen.y,
-		    attr.width, attr.height);
-  }
+  GetWindowAttrs(usrPos);
 
   if (Intersect(rc, rootQvwm->GetRect()))
     Gnome::ResetState(this, WIN_STATE_HID_WORKSPACE);
@@ -347,14 +249,14 @@ Qvwm::~Qvwm()
 
     if (FrameImage) {
       for (i = 0; i < 4; i++) {
-	QvImage::Destroy(imgSide[4]);
-	QvImage::Destroy(imgCorner[4]);
+	QvImage::Destroy(imgSide[i]);
+	QvImage::Destroy(imgCorner[i]);
       }
     }
     if (FrameActiveImage) {
       for (i = 0; i < 4; i++) {
-	QvImage::Destroy(imgActiveSide[4]);
-	QvImage::Destroy(imgActiveCorner[4]);
+	QvImage::Destroy(imgActiveSide[i]);
+	QvImage::Destroy(imgActiveCorner[i]);
       }
     }
 
@@ -430,6 +332,119 @@ Qvwm::~Qvwm()
 
   delete [] name;
   delete [] shortname;
+}
+
+void Qvwm::GetWindowAttrs(Bool usrPos)
+{
+  XWindowAttributes attr;
+
+  XGetWindowAttributes(display, wOrig, &attr);
+
+  /*
+   * Preserve original border width and set border width to 0.
+   */
+  bwOrig = attr.border_width;
+  XSetWindowBorderWidth(display, wOrig, 0);
+
+#ifdef USE_XSMP
+  /*
+   * Restore properties and attributes from the previous session
+   */
+  GetSMClientId(); // initialize smClientId
+  GetWMRole(); // initialize wmRole
+  int ax, ay, aw, ah;
+  if (session->SearchProto(smClientId, wmRole,
+			   classHints.res_class,
+			   classHints.res_name,
+			   name, &ax, &ay, &aw, &ah)) {
+    usrPos = True; // force place
+    attr.x = ax;
+    attr.y = ay;
+    attr.width = aw;
+    attr.height = ah;
+  }
+#endif // USE_XSMP
+
+  Point pageoff;
+  ExecPending* pending = ExecPending::LookInList(name, classHints);
+
+  if (pending) {
+    pageoff = pending->GetPageOff();
+    ExecPending::m_pendingList.Remove(pending);
+    delete pending;
+  }
+  else
+    pageoff = paging->origin;
+
+  /*
+   * Calculate the window position.
+   */
+  if (usrPos || (flags & (TRANSIENT | FIXED_POS)) ||
+      (hints.flags & (USPosition | PPosition))) {
+    if (CheckFlags(GEOMETRY)) {
+      if (geom->bitmask & WidthValue)
+	attr.width = geom->rc.width;
+      if (geom->bitmask & HeightValue)
+	attr.height = geom->rc.height;
+    }
+
+    if (CheckFlags(STICKY))
+      rcOrig = Rect(attr.x, attr.y, attr.width, attr.height);
+    else
+      rcOrig = Rect(attr.x + pageoff.x, attr.y + pageoff.y,
+		    attr.width, attr.height);
+
+    CalcWindowPos(rcOrig);
+  }
+  else {
+    if (CheckFlags(GEOMETRY)) {
+      if (geom->bitmask & WidthValue)
+	attr.width = geom->rc.width;
+      if (geom->bitmask & HeightValue)
+	attr.height = geom->rc.height;
+
+      if (geom->bitmask & XNegative)
+	attr.x = DisplayWidth(display, screen) + geom->rc.x - attr.width;
+      else if (geom->bitmask & XValue)
+	attr.x = geom->rc.x;
+
+      if (geom->bitmask & YNegative)
+	attr.y = DisplayHeight(display, screen) + geom->rc.y - attr.height;
+      else if (geom->bitmask & YValue)
+	attr.y = geom->rc.y;
+
+      if (CheckFlags(STICKY))
+	rcOrig = Rect(attr.x, attr.y, attr.width, attr.height);
+      else
+	rcOrig = Rect(attr.x + pageoff.x, attr.y + pageoff.y,
+		      attr.width, attr.height);
+      
+      CalcWindowPos(rcOrig);
+    }
+    else {
+      int borderWidth, topBorder, titleHeight, titleEdge;
+
+      GetBorderAndTitle(borderWidth, topBorder, titleHeight, titleEdge);
+
+      rc.width = attr.width + borderWidth * 2;
+      rc.height = attr.height + borderWidth + topBorder + titleHeight
+	+ titleEdge;
+
+      Point pt = desktop.GetNextPlace(Dim(rc.width, rc.height), pageoff);
+
+      rc.x = pt.x;
+      rc.y = pt.y;
+
+      if (CheckFlags(STICKY))
+	rcOrig = Rect(rc.x - rcScreen.x - pageoff.x,
+		      rc.y - rcScreen.y - pageoff.y,
+		      attr.width,
+		      attr.height);
+      else
+	rcOrig = Rect(rc.x - rcScreen.x, rc.y - rcScreen.y,
+		      attr.width, attr.height);
+    }
+  }
 }
 
 /*

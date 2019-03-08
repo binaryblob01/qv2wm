@@ -1,7 +1,7 @@
 /*
  * main.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +77,8 @@
 #endif
 #include "session.h"
 #include "screen_saver.h"
+#include "remote_cmd.h"
+#include "function.h"
 #include "bitmaps/logo16.xpm"
 #include "bitmaps/logo32.xpm"
 #include "bitmaps/cursor_arrow.xbm"
@@ -113,8 +115,11 @@ Cursor		cursor[9];
 XFontSet	fsDefault;
 XFontSet	fsTitle, fsTaskbar, fsBoldTaskbar, fsIcon;
 XFontSet	fsCtrlMenu, fsCascadeMenu, fsStartMenu, fsDialog;
-XColor		gray, darkGray, lightGray, grey, blue, lightBlue;
-XColor		black, white, green, yellow;
+XColor		black, white;
+XColor		gray, darkGray, grey, darkGrey, blue, lightBlue, royalBlue;
+XColor		yellow, lightYellow;
+XColor		gray95, darkGray95, lightGray95, grey95, blue95, lightBlue95;
+XColor		green95, yellow95;
 Bool		synch = False;
 Bool		shapeSupport;
 char**          qvArgv;
@@ -130,6 +135,7 @@ int failCount = 0;
 char* previousId = NULL; // The client Id from the previous session
 Session* session = NULL;
 #endif
+Bool enableTaskbar = True, enablePager = True;
 
 /*
  * Internal atoms.
@@ -160,6 +166,9 @@ Timer*		timer;
 InfoDisplay*    infoDisp;
 #ifdef USE_SS
 ScreenSaver*    scrSaver = NULL;
+#endif
+#ifdef ALLOW_RMTCMD
+RemoteCommand*  remoteCmd = NULL;
 #endif
 
 /*
@@ -197,6 +206,9 @@ int main(int argc, char** argv)
     QvwmError("Can't open display %s", XDisplayName(displayName));
     exit(1);
   }
+
+  if (displayName)
+    SetDisplayEnv(displayName);
 
   /*
    * Synchronize X events.
@@ -250,6 +262,7 @@ int main(int argc, char** argv)
   CreateInternAtom();
   ShortCutKey::SetModifier();
   Indicator::Initialize();
+  QvFunction::initialize();
 
   SetColor();
   SetGC();
@@ -319,7 +332,7 @@ void AnalizeOptions(int argc, char** argv)
 	  restart = True;
 #ifdef USE_XSMP
 	else if (strcmp(&argv[i][1], "id") == 0 ||
-		 strcmp(&argv[i][1], "clientID") == 0)
+		 strcmp(&argv[i][1], "clientId") == 0)
 	  previousId = argv[++i];
 #endif
 	else if (strcmp(&argv[i][1], "s") == 0 ||
@@ -361,7 +374,7 @@ void Usage()
 void DisplayVersion()
 {
   printf("qvwm version %s (%s)\n", Version, Codename);
-  printf("Copyright (C) 1995-2000 Kenichi Kourai.\n");
+  printf("Copyright (C) 1995-2001 Kenichi Kourai.\n");
   printf("E-mail: kourai@qvwm.org\n");
   printf("URL: http://www.qvwm.org/\n");
   exit(0);
@@ -398,6 +411,9 @@ void DisplayConfig()
   printf(" [SSEXT]");
 #endif
 #endif /* USE_SS */
+#ifdef ALLOW_RMTCMD
+  printf(" [RMTCMD]");
+#endif
   printf("\n");
   exit(0);
 }
@@ -433,23 +449,34 @@ void InitQvwm()
 
   rootQvwm = new Qvwm(root);
 
-  Rect rect(4, 3, 10, 10);
   ctrlMenu = new Menu(CtrlMenuItem, fsCtrlMenu, NULL, NULL);
 
   Icon::ctrlMenu = new IconMenu(IconMenuItem, fsCtrlMenu, NULL, NULL);
 
   desktop.SetWallPaper();
 
-  PlaySound(OpeningSound);
+#ifdef USE_SS
+  // this must be before PlaySound() because it causes SIGCHILD
+  scrSaver = new ScreenSaver(ScreenSaverProg, ScreenSaverDelay);
+#endif
+
+  if (restart)
+    PlaySound(SystemRestartSound);
+  else
+    PlaySound(SystemStartSound);
 
   paging = new Paging(TopLeftPage, PagingSize);
-  if (UsePager)
-    pager = new Pager(PagerGeometry);
 
+  if (UsePager) {
+    pager = new Pager(PagerGeometry);
+    pager->MapPager();
+  }
+  
   infoDisp = new InfoDisplay();
 
-#ifdef USE_SS
-  scrSaver = new ScreenSaver(ScreenSaverProg, ScreenSaverDelay);
+#ifdef ALLOW_RMTCMD
+  if (AllowRemoteCmd)
+    remoteCmd = new RemoteCommand();
 #endif
 
   Mwm::Init();
@@ -513,39 +540,25 @@ void SetColor()
     exit(1);
   }
 
-  if (CreateColor(0xbefb, 0xbefb, 0xbefb, &gray) == 0) {
-    QvwmError("cannot allocate color: gray");
-    gray = white;
-  }
-  if (CreateColor(0x79e7, 0x7df7, 0x79e7, &darkGray) == 0) {
-    QvwmError("cannot allocate color: dark gray");
-    darkGray = black;
-  }
-  if (CreateColor(0x0000, 0x0000, 0x79e7, &blue) == 0) {
-    QvwmError("cannot allocate color: blue");
-    blue = black;
-  }
+  CreateColor(0xd4d4, 0xd0d0, 0xc8c8, &gray, &white, "gray");
+  CreateColor(0x8080, 0x8080, 0x8080, &darkGray, &black, "dark gray");
+  CreateColor(0xc0c0, 0xc0c0, 0xc0c0, &grey, &gray, "grey");
+  CreateColor(0x4040, 0x4040, 0x4040, &darkGrey, &black, "dark grey");
+  CreateColor(0x0a0a, 0x2424, 0x6a6a, &blue, &black, "blue");
+  CreateColor(0xa6a6, 0xcaca, 0xf0f0, &lightBlue, &blue, "light blue");
+  CreateColor(0x3a3a, 0x6e6e, 0xa5a5, &royalBlue, &blue, "royal blue");
+  CreateColor(0xf5f5, 0xdbdb, 0x9595, &yellow, &white, "yellow");
+  CreateColor(0xffff, 0xffff, 0xe1e1, &lightYellow, &white, "lightYellow");
 
-  if (CreateColor(0xdf7d, 0xdf7d, 0xdf7d, &lightGray) == 0) {
-    QvwmError("cannot allocate color: light gray");
-    lightGray = gray;
-  }
-  if (CreateColor(0xb6da, 0xb2ca, 0xb6da, &grey) == 0) {
-    QvwmError("cannot allocate color: grey");
-    grey = gray;
-  }
-  if (CreateColor(0x0820, 0x8207, 0xcf3c, &lightBlue) == 0) {
-    QvwmError("cannot allocate color: lightBlue");
-    lightBlue = blue;
-  }
-  if (CreateColor(0x0000, 0x7df7, 0x79e7, &green) == 0) {
-    QvwmError("cannot allocate color: green");
-    green = blue;
-  }
-  if (CreateColor(0xffff, 0xffff, 0xdf7d, &yellow) == 0) {
-    QvwmError("cannot allocate color: yellow");
-    yellow = white;
-  }
+  // backward compatibility
+  gray95.pixel = 0;
+  darkGray95.pixel = 0;
+  lightGray95.pixel = 0;
+  grey95.pixel = 0;
+  blue95.pixel = 0;
+  lightBlue95.pixel = 0;
+  green95.pixel = 0;
+  yellow95.pixel = 0;
 
   IconForeColor = black;
   IconBackColor = white;
@@ -554,8 +567,8 @@ void SetColor()
   MiniatureColor = black;
   MiniatureActiveColor = white;
   TitlebarColor = darkGray;
+  TitlebarColor2 = grey;
   TitlebarActiveColor = blue;
-  TitlebarColor2 = grey;  // not gray!
   TitlebarActiveColor2 = lightBlue;
   TitleStringColor = gray;
   TitleStringActiveColor = white;
@@ -578,11 +591,11 @@ void SetColor()
   ButtonStringActiveColor = black;
   TaskbarColor = gray;
   ClockStringColor = black;
-  DesktopColor = green;
+  DesktopColor = royalBlue;
   DesktopActiveColor = blue;
-  StartMenuLogoColor = blue;
+  StartMenuLogoColor = black;
   CursorColor = white;
-  TooltipColor = yellow;
+  TooltipColor = lightYellow;
   TooltipStringColor = black;
 }
 
@@ -683,10 +696,6 @@ void CreateInternAtom()
  */
 void CreateLogoMarkPixmap()
 {
-  XpmAttributes attr;
-  Pixmap mask;
-  XGCValues gcv;
-
   if (DefaultIcon == NULL)
     imgLogo = new PixmapImage(logo16);
   else {
@@ -828,7 +837,7 @@ void TrapChild(int sig)
     if (pid <= 0)
       break;
 #ifdef USE_SS
-    if (scrSaver->NotifyDeadPid(pid))
+    if (scrSaver && scrSaver->NotifyDeadPid(pid))
       continue;
 #endif
     if (Indicator::NotifyDeadPid(pid))

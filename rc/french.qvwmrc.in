@@ -7,8 +7,8 @@
 
 [Variables]
 LocaleName		= "fr_FR"	; Langue Française
-ImagePath		= "@QVWMDIR@/images"
-SoundPath		= "@QVWMDIR@/sounds"
+ImagePath		= "@IMGDIR@"
+SoundPath		= "@SNDDIR@"
 RestartOnFailure	= True		; redémarrer en cas de problème
 UseDebugger		= True
 HourGlassTime		= 1000
@@ -60,6 +60,7 @@ GradTaskbarMotionSpeed	= 10		; Vitesse (faible -> rapide)
 TaskbarShowDelay	= 0		; delay for automatic show (ms)
 TaskbarHideDelay	= 500		; delay for automatic hide (ms)
 OnTopTaskbar		= True
+TaskbarButtonInScr	= False
 StartButtonTitle	= "Démarrer"	; Texte du bouton démarrer
 StartButtonMessage	= "Cliquez ici pour commencer"
 
@@ -106,6 +107,11 @@ TooltipDisplayTime	= 6000
 ; screen saver
 ScreenSaver		= "xlock"	; Screen saver program
 ScreenSaverDelay	= 600		; Start after 10 minutes
+
+; sound
+EnableSound		= True		; enable sound facility
+EnableAlsa		= False		; enable ALSA (Linux only)
+EnableEsd		= False		; enable EsounD
 
 ; Thème
 include			@QVWMDIR@/default.qvwm-theme

@@ -1,7 +1,7 @@
 /*
  * debug.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
@@ -50,7 +51,7 @@ void Debug::TraceStack(char* debugger, char* program)
   char buf[16];
   char *args[4];
 
-  sprintf(buf, "%d", getpid());
+  sprintf(buf, "%d", (int)getpid());
 
   args[0] = debugger;
   args[1] = program;

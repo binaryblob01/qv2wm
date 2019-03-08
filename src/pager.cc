@@ -1,7 +1,7 @@
 /*
  * pager.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,9 +55,9 @@ Pager::Pager(InternGeom geom)
   rcOrig.width = RoundDown(rcOrig.width, paging->rcVirt.width);
   rcOrig.height = RoundDown(rcOrig.height, paging->rcVirt.height);
   if (gravity.x == EAST)
-    rcOrig.x += geom.rc.width - rcOrig.width;
+    rcOrig.x = DisplayWidth(display, screen) + rcOrig.x - rcOrig.width;
   if (gravity.y == SOUTH)
-    rcOrig.y += geom.rc.height - rcOrig.height;
+    rcOrig.y = DisplayHeight(display, screen) + rcOrig.y - rcOrig.height;
 
   CalcPagerPos();
 
@@ -129,14 +129,9 @@ Pager::Pager(InternGeom geom)
 			 0, CopyFromParent, InputOutput, CopyFromParent,
 			 valueMask, &attributes);
   
-  XMapWindow(display, frame);
   XMapWindow(display, title);
   XMapWindow(display, pages);
   XMapWindow(display, visual);
-  
-  RaisePager();
-
-  DrawVisualPage();
 }
 
 Pager::~Pager()
@@ -145,6 +140,19 @@ Pager::~Pager()
 
   if (PagerImage)
     QvImage::Destroy(imgPager);
+}
+
+void Pager::MapPager()
+{
+  XMapWindow(display, frame);
+  DrawVisualPage();
+
+  RaisePager();
+}
+
+void Pager::UnmapPager()
+{
+  XUnmapWindow(display, frame);
 }
 
 /*
@@ -341,7 +349,7 @@ void Pager::DrawFrame()
   xp[2].x = 0;
   xp[2].y = rc.height - 2;
   
-  XSetForeground(display, gc, lightGray.pixel);
+  XSetForeground(display, gc, gray.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
 
   xp[0].x = rc.width - 1;
@@ -351,7 +359,7 @@ void Pager::DrawFrame()
   xp[2].x = 0;
   xp[2].y = rc.height - 1;
 
-  XSetForeground(display, ::gc, black.pixel);
+  XSetForeground(display, ::gc, darkGrey.pixel);
   XDrawLines(display, frame, ::gc, xp, 3, CoordModeOrigin);
 
   xp[0].x = rc.width - 3;
@@ -405,9 +413,15 @@ void Pager::Button1Press(Window win, const Point& ptRoot, const Point& ptWin)
     paging->origin.x = (ptPage.x + paging->rcVirt.x) * rcRoot.width;
     paging->origin.y = (ptPage.y + paging->rcVirt.y) * rcRoot.height;
 
+    if (paging->origin.x != oldOrigin.x || paging->origin.y != oldOrigin.y)
+      PlaySound(PagerSound);
+
     paging->PagingAllWindows(oldOrigin);
   }
   else if (win == title) {
+    if (DisableDesktopChange)
+      return;
+
     /*
      * Move the pager.
      */

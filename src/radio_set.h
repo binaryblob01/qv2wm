@@ -1,7 +1,7 @@
 /*
  * radio_set.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ class RadioButton;
  * RadioSet class
  */
 class RadioSet {
-friend RadioButton;
+  friend class RadioButton;
 private:
   RadioButton** rb;               // RadioButton belonging to this set
   int num;                        // # of RadioButton

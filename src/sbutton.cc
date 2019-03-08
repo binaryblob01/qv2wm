@@ -1,7 +1,7 @@
 /*
  * sbutton.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include "callback.h"
 #include "tooltip.h"
 
-StartButton::StartButton(Qvwm* qvWm, unsigned int some_width)
+StartButton::StartButton(Qvwm* qvWm, int some_width)
 : TaskbarButton(qvWm, Rect(rcTButton.x, rcTButton.y,
 			   some_width, TaskbarButton::BUTTON_HEIGHT), imgLogo)
 

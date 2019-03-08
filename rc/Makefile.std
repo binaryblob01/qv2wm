@@ -2,7 +2,7 @@
 # Makefile.std for rc files
 #
 
-RCFILES = system.qvwmrc kanji.qvwmrc french.qvwmrc korean.qvwmrc \
+RCFILES = system.qvwmrc kanji.qvwmrc french.qvwmrc korean.qvwmrc light.qvwmrc \
 	default.qvwm-theme clouds.qvwm-theme space.qvwm-theme
 
 all:
@@ -21,18 +21,18 @@ clean:
 	@rm *.qvwmrc
 
 system.qvwmrc: system.qvwmrc.in
-	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' system.qvwmrc.in > system.qvwmrc
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' -e 's!@IMGDIR@!$(IMGDIR)!g' -e 's!@SNDDIR@!$(SNDDIR)!g' system.qvwmrc.in > system.qvwmrc
 
 kanji.qvwmrc: kanji.qvwmrc.in
-	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' kanji.qvwmrc.in > kanji.qvwmrc
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' -e 's!@IMGDIR@!$(IMGDIR)!g' -e 's!@SNDDIR@!$(SNDDIR)!g' kanji.qvwmrc.in > kanji.qvwmrc
 
 french.qvwmrc: french.qvwmrc.in
-	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' french.qvwmrc.in > french.qvwmrc
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' -e 's!@IMGDIR@!$(IMGDIR)!g' -e 's!@SNDDIR@!$(SNDDIR)!g' french.qvwmrc.in > french.qvwmrc
 
 korean.qvwmrc: korean.qvwmrc.in
-	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' korean.qvwmrc.in > korean.qvwmrc
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' -e 's!@IMGDIR@!$(IMGDIR)!g' -e 's!@SNDDIR@!$(SNDDIR)!g' korean.qvwmrc.in > korean.qvwmrc
 
 light.qvwmrc: light.qvwmrc.in
-	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' light.qvwmrc.in > light.qvwmrc
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' -e 's!@IMGDIR@!$(IMGDIR)!g' -e 's!@SNDDIR@!$(SNDDIR)!g' light.qvwmrc.in > light.qvwmrc
 
 depend:

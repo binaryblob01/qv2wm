@@ -1,7 +1,7 @@
 /*
  * main.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,14 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
+#include "message.h"
+
 class Qvwm;
 class Rect;
 class Event;
 class FocusMgr;
 class Desktop;
 class QvImage;
-#ifdef USE_XSMP
-class Session;
-#endif
-#ifdef USE_SS
-class ScreenSaver;
-#endif
 
 extern char*		displayName;
 extern Display*		display;
@@ -48,8 +44,11 @@ extern Cursor		cursor[9];
 extern XFontSet		fsDefault;
 extern XFontSet		fsTitle, fsTaskbar, fsBoldTaskbar, fsIcon;
 extern XFontSet		fsCtrlMenu, fsCascadeMenu, fsStartMenu, fsDialog;
-extern XColor		gray, darkGray, lightGray, grey, blue, lightBlue;
-extern XColor		black, white, green, yellow;
+extern XColor		black, white;
+extern XColor		gray, darkGray, grey, darkGrey, blue, lightBlue;
+extern XColor		royalBlue, yellow, lightYellow;
+extern XColor		gray95, darkGray95, lightGray95, grey95, blue95;
+extern XColor		lightBlue95, green95, yellow95;
 extern Bool		shapeSupport;
 extern char**           qvArgv;
 extern Bool		start;
@@ -58,15 +57,26 @@ extern Bool noParse;
 extern Event event;
 extern FocusMgr focusMgr;
 extern Desktop desktop;
-#ifdef USE_XSMP
-extern Session* session;
-#endif
-#ifdef USE_SS
-extern ScreenSaver* scrSaver;
-#endif
+
+extern Bool enableTaskbar, enablePager;
 
 extern unsigned long* gradPattern;
 extern unsigned long* gradActivePattern;
+
+#ifdef USE_XSMP
+class Session;
+extern Session* session;
+#endif
+
+#ifdef USE_SS
+class ScreenSaver;
+extern ScreenSaver* scrSaver;
+#endif
+
+#ifdef ALLOW_RMTCMD
+class RemoteCommand;
+extern RemoteCommand* remoteCmd;
+#endif
 
 extern Atom _XA_WM_CHANGE_STATE;
 extern Atom _XA_WM_STATE;
@@ -103,13 +113,6 @@ extern ExitDialog*	exitDlg;
 extern ConfirmDialog*	confirmDlg;
 extern Timer*           timer;
 extern InfoDisplay*     infoDisp;
-
-#ifdef HAVE_VPRINTF
-extern void QvwmError(const char* fmt, ...);
-#else
-#define QvwmError(fmt, args...) \
-	printf("qvwm: "), printf(fmt, ## args), printf("\n")
-#endif
 
 extern void FinishQvwm();
 extern void RestartQvwm(Bool minimumRestart = False, int count = 0,

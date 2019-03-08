@@ -1,7 +1,7 @@
 /*
  * switcher.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -391,7 +391,7 @@ void TaskSwitcher::DrawTaskSwitcher()
   xp[2].x = 0;
   xp[2].y = rc.height - 2;
   
-  XSetForeground(display, gc, lightGray.pixel);
+  XSetForeground(display, gc, gray.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
   
   xp[0].x = rc.width - 1;
@@ -401,7 +401,7 @@ void TaskSwitcher::DrawTaskSwitcher()
   xp[2].x = 0;
   xp[2].y = rc.height - 1;
   
-  XSetForeground(display, gc, black.pixel);
+  XSetForeground(display, gc, darkGrey.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
   
   xp[0].x = rc.width - 3;
@@ -454,7 +454,7 @@ void TaskSwitcher::DrawTaskSwitcher()
   xp[2].x = 1;
   xp[2].y = TITLE_HEIGHT - 3;
   
-  XSetForeground(display, gc, black.pixel);
+  XSetForeground(display, gc, darkGrey.pixel);
   XDrawLines(display, titleFrame, gc, xp, 3, CoordModeOrigin);
   
   xp[0].x = TITLE_WIDTH - 2;

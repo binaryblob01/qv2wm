@@ -1,7 +1,7 @@
 /*
  * titlebar.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -393,37 +393,24 @@ static unsigned long* CreatePattern(XColor base1, XColor base2)
   int diffRed = base2.red - base1.red;
   int diffGreen = base2.green - base1.green;
   int diffBlue = base2.blue - base1.blue;
-  int status;
   int i, j;
 
   // major color allocation
   for (i = 0; i < (level + 1) / 2; i++) {
-    status = CreateColor(base1.red   + diffRed   * i / level,
-			 base1.green + diffGreen * i / level,
-			 base1.blue  + diffBlue  * i / level,
-			 &cMajor[i]);
-    if (status == 0) {
-      ASSERT(i != 0);
-      QvwmError("cannot allocate major color for titlebar gradation: #%x%x%x",
-		base1.red   + diffRed   * i / level,
+    XColor* sub = (i == 0) ? NULL : &cMajor[i - 1];
+
+    CreateColor(base1.red   + diffRed   * i / level,
 		base1.green + diffGreen * i / level,
-		base1.blue  + diffBlue  * i / level);
-      cMajor[i] = cMajor[i - 1];
-    }
+		base1.blue  + diffBlue  * i / level,
+		&cMajor[i], sub, "titlebar gradation");
   }
   for (j = level; j >= i; j--) {
-    status = CreateColor(base1.red   + diffRed   * j / level,
-			 base1.green + diffGreen * j / level,
-			 base1.blue  + diffBlue  * j / level,
-			 &cMajor[j]);
-    if (status == 0) {
-      ASSERT(j != level);
-      QvwmError("cannot allocate major color for titlebar gradation: #%04x%04x%04x",
-		base1.red   + diffRed   * j / level,
+    XColor* sub = (j == level) ? NULL : &cMajor[j + 1];
+
+    CreateColor(base1.red   + diffRed   * j / level,
 		base1.green + diffGreen * j / level,
-		base1.blue  + diffBlue  * j / level);
-      cMajor[j] = cMajor[j + 1];
-    }
+		base1.blue  + diffBlue  * j / level,
+		&cMajor[j], sub, "titlebar gradation");
   }
 
   // minor color allocation
@@ -432,21 +419,16 @@ static unsigned long* CreatePattern(XColor base1, XColor base2)
     double scale2 = (i + 0.66) / level;
     XColor cMinor[2];
     unsigned long p[4];
-    int status;
 
-    status = CreateColor(base1.red   + int(diffRed   * scale1),
-			 base1.green + int(diffGreen * scale1),
-			 base1.blue  + int(diffBlue  * scale1),
-			 &cMinor[0]);
-    if (status == 0)
-      cMinor[0] = cMajor[i];
+    CreateColor(base1.red   + int(diffRed   * scale1),
+		base1.green + int(diffGreen * scale1),
+		base1.blue  + int(diffBlue  * scale1),
+		&cMinor[0], &cMajor[i]);
 
-    status = CreateColor(base1.red   + int(diffRed   * scale2),
-			 base1.green + int(diffGreen * scale2),
-			 base1.blue  + int(diffBlue  * scale2),
-			 &cMinor[1]);
-    if (status == 0)
-      cMinor[1] = cMajor[i + 1];
+    CreateColor(base1.red   + int(diffRed   * scale2),
+		base1.green + int(diffGreen * scale2),
+		base1.blue  + int(diffBlue  * scale2),
+		&cMinor[1], &cMajor[i + 1]);
 
     p[0] = cMajor[i].pixel;
     p[1] = cMinor[0].pixel;

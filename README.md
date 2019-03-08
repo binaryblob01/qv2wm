@@ -6,4 +6,4 @@ This is a fork/continuation of the QVWM window manager available many years ago,
 !! This is OBSOLTE SOFTWARE. DO NOT USE on production systems !!
 
 
-This is the original, untouched QVWM 1.1.7 source code, here to preserve history.
+This is the original, untouched QVWM 1.1.11 source code, here to preserve history.

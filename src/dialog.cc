@@ -1,7 +1,7 @@
 /*
  * dialog.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,6 +90,17 @@ void Dialog::MapDialog()
   XSetInputFocus(display, frame, RevertToParent, CurrentTime);
 }
 
+void Dialog::UnmapDialog()
+{
+  XUnmapWindow(display, frame);
+
+  Qvwm::SetFocusToActiveWindow();
+}
+
+void Dialog::DrawClientWin()
+{
+}
+
 /*
  * EventLoop --
  *   Process events when dialog is mapped.
@@ -151,6 +162,10 @@ ResourceId Dialog::EventLoop()
       dlgTimer->CheckTimeout(&tm);
     }
   }
+}
+
+void Dialog::Exposure(Window win)
+{
 }
 
 /*

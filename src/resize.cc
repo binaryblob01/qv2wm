@@ -1,7 +1,7 @@
 /*
  * resize.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -343,7 +343,7 @@ void Qvwm::ResizeWindow(unsigned int pos, Bool mouseResize)
     infoDisp->Unmap();
 
   if (ClickToFocus)
-    XSetInputFocus(display, wOrig, RevertToParent, CurrentTime);
+    SetFocusToActiveWindow();
   if (pointer)
     XUngrabPointer(display, CurrentTime);
   XUngrabKeyboard(display, CurrentTime);

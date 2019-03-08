@@ -1,7 +1,7 @@
 /*
  * button.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ public:
   virtual void SetBgActiveImage(QvImage* img, const Point& off);
   virtual void ExecButtonFunc(ButtonState state) = 0;
   virtual void Button1Press();
-  virtual void Button3Release(const Point& ptRoot) {}
+  virtual void Button3Release(const Point& ptRoot);
   virtual void Enter();
   virtual void Leave();
   virtual void PointerMotion();

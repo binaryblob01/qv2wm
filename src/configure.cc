@@ -1,7 +1,7 @@
 /*
  * configure.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,24 +107,33 @@ void Qvwm::Configure(const XConfigureRequestEvent* cre)
       + titleEdge;
   }
 
-  ASSERT(fButton[FrameButton::MAXIMIZE]);
+  if (cre->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
+    if (CheckStatus(MAXIMIZE_WINDOW) && !CheckStatus(MINIMIZE_WINDOW)) {
+      ResetStatus(MAXIMIZE_WINDOW);
+      flags = flagsBak;
 
-  fButton[FrameButton::MAXIMIZE]->SetState(Button::NORMAL);
-  fButton[FrameButton::MAXIMIZE]->ChangeImage(FrameButton::MAXIMIZE);
+      ASSERT(fButton[FrameButton::MAXIMIZE]);
+      
+      fButton[FrameButton::MAXIMIZE]->SetState(Button::NORMAL);
+      fButton[FrameButton::MAXIMIZE]->ChangeImage(FrameButton::MAXIMIZE);
+      fButton[FrameButton::MAXIMIZE]->DrawButton();
 
-  if (CheckStatus(MAXIMIZE_WINDOW)) {
-    ResetStatus(MAXIMIZE_WINDOW);
-    flags = flagsBak;
+      for (int i = 0; i < 4; i++) {
+	XMapWindow(display, side[i]);
+	XMapWindow(display, corner[i]);
+      }
 
-    if (CheckFlags(THIN_BORDER))
-      XSetWindowBorderWidth(display, frame, 1);
+      if (CheckFlags(THIN_BORDER))
+	XSetWindowBorderWidth(display, frame, 1);
 
-    Gnome::ResetState(this,
-		      WIN_STATE_MAXIMIZED_VERT | WIN_STATE_MAXIMIZED_HORIZ);
+      Gnome::ResetState(this,
+			WIN_STATE_MAXIMIZED_VERT | WIN_STATE_MAXIMIZED_HORIZ);
+
+    }
+
+    SendConfigureEvent();
+    RedrawWindow();
   }
-
-  SendConfigureEvent();
-  RedrawWindow();
 }
 
 void Qvwm::Circulate(int place)

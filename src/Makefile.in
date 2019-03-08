@@ -65,6 +65,7 @@ ESD_CONFIG = @ESD_CONFIG@
 ESD_LIBS = @ESD_LIBS@
 GDK_IMLIB_CFLAGS = @GDK_IMLIB_CFLAGS@
 GDK_IMLIB_LIBS = @GDK_IMLIB_LIBS@
+IMGDIR = @IMGDIR@
 IMLIB_CFLAGS = @IMLIB_CFLAGS@
 IMLIB_CONFIG = @IMLIB_CONFIG@
 IMLIB_LIBS = @IMLIB_LIBS@
@@ -75,6 +76,7 @@ MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 PATH_RM = @PATH_RM@
 QVWMDIR = @QVWMDIR@
+SNDDIR = @SNDDIR@
 VERSION = @VERSION@
 YACC = @YACC@
 
@@ -82,11 +84,50 @@ SUBDIRS = bitmaps
 
 bin_PROGRAMS = qvwm
 
-qvwm_SOURCES = button.cc button.h callback.h colormap.cc configure.cc ctrl_button.cc debug.cc debug.h desktop.cc desktop.h dialog.cc dialog.h event.cc event.h exit_dialog.cc exit_dialog.h fbutton.cc fbutton.h focus.cc focus_mgr.cc focus_mgr.h frame.cc function.cc hash.h icon.cc icon.h indicator.cc indicator.h key.cc key.h yaccsrc.yy yaccsrc.h lexsrc.ll list.h main.cc main.h menu.cc menu.h mini.cc mini.h misc.h move.cc pager.cc pager.h paging.cc paging.h parse.cc parse.h property.cc qvwm.cc qvwm.h qvwmrc.cc qvwmrc.h radio_button.cc radio_button.h radio_set.cc radio_set.h rearrange.cc resize.cc resize_sp.cc resource.h sbutton.cc sbutton.h startmenu.cc startmenu.h string_button.cc string_button.h switcher.cc switcher.h system_dialog.cc system_dialog.h taskbar.cc taskbar.h tbutton.cc tbutton.h titlebar.cc timer.cc timer.h util.cc util.h ver.h window.cc mwm.cc mwm.h gnome.cc gnome.h audio.cc audio.h audio_wav.cc audio_wav.h audio_au.cc audio_au.h exec.cc exec.h info_display.cc info_display.h tooltip.cc tooltip.h accessory.cc accessory.h image.cc image.h pixmap_image.cc pixmap_image.h anim_image.cc anim_image.h extra_image.cc extra_image.h session.cc session.h confirm_dialog.cc confirm_dialog.h screen_saver.cc screen_saver.h
+qvwm_SOURCES = main.cc main.h $(WINDOW_SRCS) $(BASE_SRCS) $(EVENT_SRCS) $(RC_SRCS) $(WM_SRCS) $(DESKTOP_SRCS) $(MENU_SRCS) $(TASKBAR_SRCS) $(PAGER_SRCS) $(IMAGE_SRCS) $(BUTTON_SRCS) $(DIALOG_SRCS) $(TOOLTIP_SRCS) $(AUDIO_SRCS) remote_cmd.cc remote_cmd.h
+
+
+WINDOW_SRCS = qvwm.cc qvwm.h frame.cc titlebar.cc window.cc move.cc resize.cc resize_sp.cc rearrange.cc focus.cc focus_mgr.cc focus_mgr.h
+
+
+BASE_SRCS = util.cc util.h message.h ver.h timer.cc timer.h function.cc function.h debug.cc debug.h hash.h list.h misc.h callback.h exec.cc exec.h 
+
+
+EVENT_SRCS = event.cc event.h colormap.cc configure.cc property.cc key.cc key.h 
+
+
+RC_SRCS = parse.cc parse.h yaccsrc.yy yaccsrc.h lexsrc.ll qvwmrc.cc qvwmrc.h 
+
+
+WM_SRCS = mwm.cc mwm.h gnome.cc gnome.h session.cc session.h screen_saver.cc screen_saver.h 
+
+
+DESKTOP_SRCS = desktop.cc desktop.h icon.cc icon.h switcher.cc switcher.h paging.cc paging.h info_display.cc info_display.h accessory.cc accessory.h
+
+
+MENU_SRCS = menu.cc menu.h menu_func.cc startmenu.cc startmenu.h 
+
+TASKBAR_SRCS = taskbar.cc taskbar.h tbutton.cc tbutton.h indicator.cc indicator.h 
+
+
+PAGER_SRCS = pager.cc pager.h mini.cc mini.h 
+
+IMAGE_SRCS = image.cc image.h pixmap_image.cc pixmap_image.h extra_image.cc extra_image.h anim_image.cc anim_image.h
+
+
+BUTTON_SRCS = button.cc button.h string_button.cc string_button.h ctrl_button.cc fbutton.cc fbutton.h sbutton.cc sbutton.h
+
+
+DIALOG_SRCS = dialog.cc dialog.h system_dialog.cc system_dialog.h radio_button.cc radio_button.h radio_set.cc radio_set.h resource.h exit_dialog.cc exit_dialog.h confirm_dialog.cc confirm_dialog.h 
+
+
+TOOLTIP_SRCS = tooltip.cc tooltip.h 
+
+AUDIO_SRCS = audio.cc audio.h audio_wav.cc audio_wav.h audio_au.cc audio_au.h audiodev.cc audiodev.h audiodev_alsa.cc audiodev_alsa.h audiodev_esd.cc audiodev_esd.h audiodev_oss.cc audiodev_oss.h audiodev_sun.cc audiodev_sun.h
 
 
 # VPATH is not enough for lexsrc.ll and yaccsrc.yy
-DEFS =  -DIMGDIR=\"@QVWMDIR@/images\" -DSNDDIR=\"@QVWMDIR@/sounds\" -DQVWMDIR=\"@QVWMDIR@\" -DPATH_RM=\"@PATH_RM@\" -DHAVE_CONFIG_H -I$(top_builddir) -I$(srcdir)
+DEFS =  -DQVWMDIR=\"@QVWMDIR@\" -DIMGDIR=\"@IMGDIR@\" -DSNDDIR=\"@SNDDIR@\" -DPATH_RM=\"@PATH_RM@\" -DHAVE_CONFIG_H -I$(top_builddir) -I$(srcdir)
 
 qvwm_LDADD = @LEXLIB@
 
@@ -105,16 +146,18 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-qvwm_OBJECTS =  button.o colormap.o configure.o ctrl_button.o debug.o \
-desktop.o dialog.o event.o exit_dialog.o fbutton.o focus.o focus_mgr.o \
-frame.o function.o icon.o indicator.o key.o yaccsrc.o lexsrc.o main.o \
-menu.o mini.o move.o pager.o paging.o parse.o property.o qvwm.o \
-qvwmrc.o radio_button.o radio_set.o rearrange.o resize.o resize_sp.o \
-sbutton.o startmenu.o string_button.o switcher.o system_dialog.o \
-taskbar.o tbutton.o titlebar.o timer.o util.o window.o mwm.o gnome.o \
-audio.o audio_wav.o audio_au.o exec.o info_display.o tooltip.o \
-accessory.o image.o pixmap_image.o anim_image.o extra_image.o session.o \
-confirm_dialog.o screen_saver.o
+qvwm_OBJECTS =  main.o qvwm.o frame.o titlebar.o window.o move.o \
+resize.o resize_sp.o rearrange.o focus.o focus_mgr.o util.o timer.o \
+function.o debug.o exec.o event.o colormap.o configure.o property.o \
+key.o parse.o yaccsrc.o lexsrc.o qvwmrc.o mwm.o gnome.o session.o \
+screen_saver.o desktop.o icon.o switcher.o paging.o info_display.o \
+accessory.o menu.o menu_func.o startmenu.o taskbar.o tbutton.o \
+indicator.o pager.o mini.o image.o pixmap_image.o extra_image.o \
+anim_image.o button.o string_button.o ctrl_button.o fbutton.o sbutton.o \
+dialog.o system_dialog.o radio_button.o radio_set.o exit_dialog.o \
+confirm_dialog.o tooltip.o audio.o audio_wav.o audio_au.o audiodev.o \
+audiodev_alsa.o audiodev_esd.o audiodev_oss.o audiodev_sun.o \
+remote_cmd.o
 qvwm_DEPENDENCIES = 
 qvwm_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
@@ -321,22 +364,256 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-main.o: main.cc ../config.h misc.h qvwm.h main.h util.h image.h menu.h \
-	hash.h tbutton.h button.h list.h debug.h fbutton.h taskbar.h \
-	event.h parse.h qvwmrc.h desktop.h icon.h switcher.h paging.h \
-	pager.h mini.h timer.h callback.h key.h ver.h focus_mgr.h \
-	dialog.h resource.h indicator.h mwm.h gnome.h info_display.h \
-	pixmap_image.h tooltip.h accessory.h startmenu.h radio_button.h \
-	session.h screen_saver.h bitmaps/logo16.xpm bitmaps/logo32.xpm \
-	bitmaps/cursor_arrow.xbm bitmaps/csmask_arrow.xbm \
-	bitmaps/cursor_size_h.xbm bitmaps/csmask_size_h.xbm \
-	bitmaps/cursor_size_v.xbm bitmaps/csmask_size_v.xbm \
-	bitmaps/cursor_size_l.xbm bitmaps/csmask_size_l.xbm \
-	bitmaps/cursor_size_r.xbm bitmaps/csmask_size_r.xbm \
-	bitmaps/cursor_busy.xbm bitmaps/csmask_busy.xbm \
-	bitmaps/cursor_move.xbm bitmaps/csmask_move.xbm \
-	bitmaps/cursor_wait.xbm bitmaps/csmask_wait.xbm \
-	bitmaps/cursor_no.xbm bitmaps/csmask_no.xbm
+accessory.o: accessory.cc ../config.h main.h message.h accessory.h \
+	misc.h util.h image.h function.h hash.h callback.h timer.h \
+	list.h extra_image.h
+anim_image.o: anim_image.cc ../config.h main.h message.h anim_image.h \
+	image.h misc.h pixmap_image.h timer.h list.h callback.h \
+	qvwmrc.h util.h function.h hash.h taskbar.h tbutton.h button.h \
+	menu.h desktop.h qvwm.h extra_image.h
+audio.o: audio.cc ../config.h main.h message.h qvwmrc.h misc.h util.h \
+	image.h function.h hash.h taskbar.h tbutton.h button.h menu.h \
+	desktop.h list.h qvwm.h audio.h audiodev_alsa.h audiodev.h \
+	audiodev_esd.h audiodev_oss.h audiodev_sun.h
+audio_au.o: audio_au.cc ../config.h audio_au.h audio.h message.h
+audio_wav.o: audio_wav.cc ../config.h audio_wav.h audio.h message.h
+audiodev.o: audiodev.cc ../config.h audiodev.h audio.h message.h
+audiodev_alsa.o: audiodev_alsa.cc audiodev_alsa.h ../config.h audiodev.h \
+	audio.h message.h
+audiodev_esd.o: audiodev_esd.cc audiodev_esd.h ../config.h audiodev.h \
+	audio.h message.h
+audiodev_oss.o: audiodev_oss.cc audiodev_oss.h audiodev.h audio.h \
+	message.h
+audiodev_sun.o: audiodev_sun.cc audiodev_sun.h
+button.o: button.cc ../config.h main.h message.h misc.h button.h event.h \
+	qvwmrc.h util.h image.h function.h hash.h taskbar.h tbutton.h \
+	menu.h desktop.h list.h qvwm.h tooltip.h
+colormap.o: colormap.cc ../config.h main.h message.h misc.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h desktop.h taskbar.h
+configure.o: configure.cc ../config.h main.h message.h misc.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h fbutton.h paging.h taskbar.h timer.h callback.h gnome.h \
+	qvwmrc.h desktop.h
+confirm_dialog.o: confirm_dialog.cc ../config.h confirm_dialog.h \
+	system_dialog.h dialog.h util.h misc.h image.h function.h \
+	hash.h resource.h main.h message.h qvwm.h menu.h tbutton.h \
+	button.h list.h
+ctrl_button.o: ctrl_button.cc ../config.h main.h message.h qvwm.h misc.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h event.h qvwmrc.h taskbar.h desktop.h paging.h
+debug.o: debug.cc ../config.h main.h message.h debug.h
+desktop.o: desktop.cc ../config.h main.h message.h qvwm.h misc.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	desktop.h taskbar.h focus_mgr.h paging.h icon.h indicator.h \
+	startmenu.h switcher.h pager.h exit_dialog.h system_dialog.h \
+	dialog.h resource.h confirm_dialog.h qvwmrc.h gnome.h mini.h \
+	callback.h accessory.h session.h fbutton.h screen_saver.h \
+	remote_cmd.h
+dialog.o: dialog.cc ../config.h main.h message.h misc.h dialog.h util.h \
+	image.h function.h hash.h resource.h qvwmrc.h taskbar.h \
+	tbutton.h button.h menu.h desktop.h list.h qvwm.h timer.h \
+	callback.h
+event.o: event.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	event.h taskbar.h fbutton.h sbutton.h startmenu.h icon.h \
+	qvwmrc.h desktop.h paging.h pager.h mini.h key.h indicator.h \
+	timer.h callback.h focus_mgr.h gnome.h tooltip.h session.h \
+	screen_saver.h remote_cmd.h
+exec.o: exec.cc ../config.h main.h message.h exec.h misc.h list.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h
+exit_dialog.o: exit_dialog.cc ../config.h main.h message.h misc.h \
+	exit_dialog.h system_dialog.h dialog.h util.h image.h \
+	function.h hash.h resource.h radio_button.h qvwm.h menu.h \
+	tbutton.h button.h list.h event.h qvwmrc.h taskbar.h desktop.h \
+	confirm_dialog.h
+extra_image.o: extra_image.cc ../config.h main.h message.h extra_image.h \
+	image.h misc.h
+fbutton.o: fbutton.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	fbutton.h qvwmrc.h taskbar.h desktop.h pixmap_image.h tooltip.h \
+	bitmaps/button_min.xpm bitmaps/button_max.xpm \
+	bitmaps/button_close.xpm bitmaps/button_restore.xpm
+focus.o: focus.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	icon.h qvwmrc.h taskbar.h desktop.h focus_mgr.h pager.h
+focus_mgr.o: focus_mgr.cc ../config.h main.h message.h util.h misc.h \
+	image.h function.h hash.h qvwm.h menu.h tbutton.h button.h \
+	list.h focus_mgr.h qvwmrc.h taskbar.h desktop.h key.h pager.h \
+	mini.h paging.h fbutton.h
+frame.o: frame.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	taskbar.h paging.h fbutton.h qvwmrc.h desktop.h timer.h \
+	callback.h mini.h pager.h
+function.o: function.cc ../config.h main.h message.h misc.h function.h \
+	hash.h qvwm.h util.h image.h menu.h tbutton.h button.h list.h \
+	startmenu.h fbutton.h parse.h event.h switcher.h qvwmrc.h \
+	taskbar.h desktop.h exit_dialog.h system_dialog.h dialog.h \
+	resource.h confirm_dialog.h paging.h pager.h icon.h focus_mgr.h \
+	gnome.h
+gnome.o: gnome.cc ../config.h main.h message.h gnome.h paging.h misc.h \
+	desktop.h list.h taskbar.h tbutton.h button.h menu.h util.h \
+	image.h function.h hash.h qvwm.h fbutton.h qvwmrc.h
+icon.o: icon.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	icon.h event.h startmenu.h qvwmrc.h taskbar.h desktop.h \
+	pixmap_image.h callback.h tooltip.h bitmaps/icon32.xpm
+image.o: image.cc ../config.h main.h message.h image.h misc.h callback.h
+indicator.o: indicator.cc ../config.h main.h message.h misc.h util.h \
+	image.h function.h hash.h indicator.h list.h taskbar.h \
+	tbutton.h button.h menu.h qvwm.h qvwmrc.h desktop.h
+info_display.o: info_display.cc ../config.h main.h message.h \
+	info_display.h misc.h
+key.o: key.cc ../config.h main.h message.h util.h misc.h image.h \
+	function.h hash.h key.h menu.h qvwmrc.h taskbar.h tbutton.h \
+	button.h desktop.h list.h qvwm.h
+lexsrc.o: lexsrc.cc ../config.h main.h message.h parse.h util.h misc.h \
+	image.h function.h hash.h yaccsrc.h
+main.o: main.cc ../config.h misc.h qvwm.h main.h message.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	fbutton.h taskbar.h event.h parse.h qvwmrc.h desktop.h icon.h \
+	switcher.h paging.h pager.h mini.h timer.h callback.h key.h \
+	debug.h ver.h focus_mgr.h dialog.h resource.h indicator.h mwm.h \
+	gnome.h info_display.h pixmap_image.h tooltip.h accessory.h \
+	startmenu.h radio_button.h extra_image.h session.h \
+	screen_saver.h remote_cmd.h bitmaps/logo16.xpm \
+	bitmaps/logo32.xpm bitmaps/cursor_arrow.xbm \
+	bitmaps/csmask_arrow.xbm bitmaps/cursor_size_h.xbm \
+	bitmaps/csmask_size_h.xbm bitmaps/cursor_size_v.xbm \
+	bitmaps/csmask_size_v.xbm bitmaps/cursor_size_l.xbm \
+	bitmaps/csmask_size_l.xbm bitmaps/cursor_size_r.xbm \
+	bitmaps/csmask_size_r.xbm bitmaps/cursor_busy.xbm \
+	bitmaps/csmask_busy.xbm bitmaps/cursor_move.xbm \
+	bitmaps/csmask_move.xbm bitmaps/cursor_wait.xbm \
+	bitmaps/csmask_wait.xbm bitmaps/cursor_no.xbm \
+	bitmaps/csmask_no.xbm
+menu.o: menu.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	startmenu.h qvwmrc.h taskbar.h desktop.h timer.h callback.h \
+	key.h icon.h paging.h pixmap_image.h bitmaps/folder16.xpm \
+	bitmaps/icon16.xpm bitmaps/next_black.xpm \
+	bitmaps/next_white.xpm bitmaps/check_black.xpm \
+	bitmaps/check_white.xpm bitmaps/selector_black.xpm \
+	bitmaps/selector_white.xpm
+menu_func.o: menu_func.cc ../config.h main.h message.h menu.h misc.h \
+	util.h image.h function.h hash.h
+mini.o: mini.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	mini.h pager.h taskbar.h qvwmrc.h desktop.h paging.h event.h \
+	tooltip.h
+move.o: move.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	qvwmrc.h taskbar.h desktop.h paging.h event.h pager.h mini.h \
+	key.h info_display.h
+mwm.o: mwm.cc ../config.h main.h message.h mwm.h qvwm.h misc.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h
+pager.o: pager.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	event.h qvwmrc.h taskbar.h desktop.h paging.h pager.h \
+	callback.h
+paging.o: paging.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	qvwmrc.h taskbar.h desktop.h paging.h pager.h mini.h event.h \
+	gnome.h
+parse.o: parse.cc ../config.h main.h message.h util.h misc.h image.h \
+	function.h hash.h taskbar.h tbutton.h button.h menu.h icon.h \
+	list.h key.h parse.h qvwmrc.h desktop.h qvwm.h indicator.h \
+	accessory.h timer.h callback.h
+pixmap_image.o: pixmap_image.cc ../config.h main.h message.h \
+	pixmap_image.h image.h misc.h extra_image.h
+property.o: property.cc ../config.h main.h message.h misc.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h qvwmrc.h taskbar.h desktop.h gnome.h dialog.h resource.h \
+	switcher.h session.h tooltip.h
+qvwm.o: qvwm.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	fbutton.h sbutton.h startmenu.h event.h taskbar.h icon.h \
+	qvwmrc.h desktop.h switcher.h paging.h pager.h mini.h key.h \
+	indicator.h focus_mgr.h mwm.h gnome.h exec.h session.h \
+	tooltip.h screen_saver.h
+qvwmrc.o: qvwmrc.cc ../config.h main.h message.h taskbar.h tbutton.h \
+	button.h misc.h menu.h util.h image.h function.h hash.h parse.h \
+	qvwmrc.h desktop.h list.h qvwm.h key.h
+radio_button.o: radio_button.cc ../config.h main.h message.h misc.h \
+	util.h image.h function.h hash.h qvwm.h menu.h tbutton.h \
+	button.h list.h radio_button.h resource.h radio_set.h qvwmrc.h \
+	taskbar.h desktop.h dialog.h pixmap_image.h \
+	bitmaps/radiobtn_normal.xpm bitmaps/radiobtn_push.xpm \
+	bitmaps/radiobtn_select.xpm
+radio_set.o: radio_set.cc ../config.h misc.h qvwm.h main.h message.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h radio_set.h resource.h radio_button.h
+rearrange.o: rearrange.cc ../config.h main.h message.h misc.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h paging.h pager.h mini.h taskbar.h qvwmrc.h desktop.h
+remote_cmd.o: remote_cmd.cc ../config.h main.h message.h remote_cmd.h \
+	function.h hash.h qvwmrc.h misc.h util.h image.h taskbar.h \
+	tbutton.h button.h menu.h desktop.h list.h qvwm.h
+resize.o: resize.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	event.h taskbar.h qvwmrc.h desktop.h paging.h pager.h mini.h \
+	info_display.h
+resize_sp.o: resize_sp.cc ../config.h main.h message.h misc.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h event.h taskbar.h fbutton.h qvwmrc.h desktop.h paging.h \
+	pager.h mini.h gnome.h
+sbutton.o: sbutton.cc ../config.h main.h message.h qvwm.h misc.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	sbutton.h startmenu.h qvwmrc.h taskbar.h desktop.h callback.h \
+	tooltip.h
+screen_saver.o: screen_saver.cc ../config.h screen_saver.h misc.h main.h \
+	message.h timer.h list.h callback.h qvwm.h util.h image.h \
+	function.h hash.h menu.h tbutton.h button.h
+session.o: session.cc ../config.h main.h message.h session.h list.h \
+	desktop.h misc.h taskbar.h tbutton.h button.h menu.h util.h \
+	image.h function.h hash.h qvwm.h
+startmenu.o: startmenu.cc ../config.h main.h message.h misc.h qvwm.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h startmenu.h taskbar.h qvwmrc.h desktop.h pixmap_image.h \
+	callback.h timer.h bitmaps/folder32.xpm bitmaps/icon32.xpm \
+	bitmaps/logo_qvwm11.xpm
+string_button.o: string_button.cc ../config.h main.h message.h \
+	resource.h misc.h string_button.h button.h qvwmrc.h util.h \
+	image.h function.h hash.h taskbar.h tbutton.h menu.h desktop.h \
+	list.h qvwm.h
+switcher.o: switcher.cc ../config.h main.h message.h qvwm.h misc.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h switcher.h qvwmrc.h taskbar.h desktop.h timer.h \
+	callback.h key.h focus_mgr.h
+system_dialog.o: system_dialog.cc ../config.h main.h message.h misc.h \
+	qvwm.h util.h image.h function.h hash.h menu.h tbutton.h \
+	button.h list.h system_dialog.h dialog.h resource.h \
+	radio_button.h radio_set.h string_button.h qvwmrc.h taskbar.h \
+	desktop.h
+taskbar.o: taskbar.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	taskbar.h sbutton.h startmenu.h event.h icon.h paging.h pager.h \
+	qvwmrc.h desktop.h indicator.h tooltip.h callback.h timer.h
+tbutton.o: tbutton.cc ../config.h main.h message.h misc.h util.h image.h \
+	function.h hash.h qvwm.h menu.h tbutton.h button.h list.h \
+	sbutton.h taskbar.h startmenu.h qvwmrc.h desktop.h paging.h \
+	pixmap_image.h tooltip.h bitmaps/tile0.xpm
+timer.o: timer.cc ../config.h main.h message.h qvwm.h misc.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	timer.h callback.h
+titlebar.o: titlebar.cc ../config.h main.h message.h qvwm.h misc.h \
+	util.h image.h function.h hash.h menu.h tbutton.h button.h \
+	list.h qvwmrc.h taskbar.h desktop.h event.h fbutton.h tooltip.h
+tooltip.o: tooltip.cc ../config.h main.h message.h tooltip.h misc.h \
+	timer.h list.h callback.h qvwmrc.h util.h image.h function.h \
+	hash.h taskbar.h tbutton.h button.h menu.h desktop.h qvwm.h
+util.o: util.cc ../config.h main.h message.h misc.h qvwm.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	qvwmrc.h taskbar.h desktop.h timer.h callback.h audio_wav.h \
+	audio.h audio_au.h exec.h paging.h pager.h anim_image.h \
+	pixmap_image.h extra_image.h
+window.o: window.cc ../config.h main.h message.h qvwm.h misc.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	fbutton.h qvwmrc.h taskbar.h desktop.h pager.h mini.h timer.h \
+	callback.h focus_mgr.h gnome.h paging.h
+yaccsrc.o: yaccsrc.cc ../config.h main.h message.h qvwm.h misc.h util.h \
+	image.h function.h hash.h menu.h tbutton.h button.h list.h \
+	parse.h
 
 info-am:
 info: info-recursive

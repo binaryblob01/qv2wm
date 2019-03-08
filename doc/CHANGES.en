@@ -990,5 +990,92 @@ beta13a -> 1.0
 10. Fix the bug that a strange tooltip is sometimes shown after you
     close a window.
 
+1.1.7 -> 1.1.8
+--------------
+1. Fix the bugs of memory management.
+2. Use mkstemp() instead of tmpnam() for security.  (This is affected
+   only when qvwm use Imlib)
+3. Fix the bug that the command-line option -clientId is not recognized,
+   which was recognized in older versions.
+
+1.1.8 -> 1.1.9
+--------------
+1. Fix the bug that qvwm's accessory windows are sometimes not located
+   properly if the user specifies the position with a +x+y form.
+2. Fix the bug that the icons of gmc are not restored when the session
+   is restored.
+3. Fix the bug that qvwm sometimes crashes if a program for an
+   indicator is not found.
+4. Fix the bug that a window is sometimes not located at a position
+   that the application specifies.
+5. Fix the bug that the active window loses an input focus after the
+   user moves or resizes the other window with NO_FOCUS, or uses its
+   menus.
+6. Fix the bug that the active window loses an input focus after the
+   user shows and dismisses the exit dialog.
+7. Enable to show only the taskbar buttons for windows in the current
+   screen when a TaskbarButtonInScr variable is True.
+8. Enable to switch show/hide the taskbar and the pager using
+   QVWM_TOGGLE_TASKBAR and QVWM_TOGGLE_PAGER variables, respectively.
+
+1.1.9 -> 1.1.10
+---------------
+1. Allow to specify paths for images and sounds in configure.  Those
+   are reflected to ImagePath and SoundPath in installed configuration
+   files.
+2. Fix the bug that compiling audio.cc fails on SunOS/Solaris.
+3. Restore the configure script so that the compile does not fail in
+   egcs 2.95.
+4. Support ALSA (Advanced Linux Sound Architecture) ver 0.5.
+5. Add sound control variables: EnableSound, EnableAlsa, and EnableEsd.
+   (EnableAlsa and EnableEsd are valid if qvwm is compiled as using
+   these.)
+6. Fix the bug that a maximized netscape window becomes a wierd state
+   if you open a new web page.
+7. Fix the bug that qvwm sometimes crashes at start if enabling both
+   screen saver facility and sound facility.
+8. Allow to send commands to qvwm by writing to /tmp/qvwm-<display_name>
+   from other processes.  This facility is validated only if qvwm is
+   compiled with the --enable-rmtcmd option (default) and if the
+   AllowRemoteCmd variable is True (non-default).
+9. Add the DisableDesktopChange, which disallows users to move and
+   resize the taskbar, the pager, and shortcut icons.
+10. Add the GEOMETRY attribute for the [Applications] section, which
+    is used to specify a window geometry.
+11. Add window rearrangement functions: QVWM_OVERLAP_INSCR,
+    QVWM_TILE_HORZ_INSCR, QVWM_TILE_VERT_INSCR, QVWM_MINIMIZE_ALL_INSCR,
+    QVWM_RESTORE_ALL, QVWM_RESTORE_ALL_INSCR, QVWM_CLOSE_ALL, and
+    QVWM_CLOSE_ALL_INSCR.  Change QVWM_OVERLAP, QVWM_TILE_HORZ,
+    QVWM_TILE_VERT, and QVWM_MINIMIZE to functions for all windows.
+12. Fix the bug that a window is sometimes not activated even if you
+    click the window body when ClickingRaises is True.
+13. The display specified by the -display option is set to the DISPLAY
+    environment variable so that qvwm can launch indicators and
+    applications on the same display.
+14. Add control functions of the taskbar and the pager:
+    QVWM_ENABLE_AUTOHIDE, QVWM_DISABLE_AUTOHIDE, QVWM_ENABLE_TASKBAR,
+    QVWM_DISABLE_TASKBAR, QVWM_ENABLE_PAGER, and QVWM_DISABLE_PAGER.
+15. Fix the bug that qvwm sometimes crashes when the user closes
+    a minimized window from the menu of a taskbar button and then
+    activates another window.
+16. Fix the bug that a dialog of netscape is located in the left
+    or up virtual page after the second time when netscape is located
+    in a page which has negative coordinates.
+
+1.1.10 -> 1.1.11
+----------------
+1. Fix the bug that two icons are shown for the same window in the
+   task switcher.
+2. Add sound events: RestoreUpSound, RestoreDownSound, MenuPopupSound,
+   MenuCommandSound, OpenSound, CloseSound, PagerSound, and PagingSound.
+3. Change OpengingSound, EndingSound, and RestartSound to
+   SystemStartSound, SystemExitSound, and SystemRestartSound, respectively.
+4. Fix the bug that qvwm puts an error when a specifiged sound file is
+   "".
+5. Fix the bug that qvwm sometimes becomes unstable after playing sounds.
+6. Change the default coloring as in Windows 2000.
+7. Fix the bug that part of the clock in the indicator area is hidden
+   after all indicators terminated.
+
 ---
 Translated partially by Yukihiro Nakai <Nakai@Mlab.t.u-tokyo.ac.jp>

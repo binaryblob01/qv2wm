@@ -1,7 +1,7 @@
 /*
  * menu.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 #include "icon.h"
 #include "callback.h"
 #include "taskbar.h"
+#include "paging.h"
 #include "pixmap_image.h"
 #include "bitmaps/folder16.xpm"
 #include "bitmaps/icon16.xpm"
@@ -61,11 +62,11 @@ QvImage 	*Menu::imgMenuBack, *Menu::imgActiveMenuBack;
 Menu::Menu(MenuElem* mItem, XFontSet& menufs, Menu* par, Qvwm* qvwm,
 	   int lMargin, int nMargin, int hMargin,
 	   QvImage* imgDefFolder, QvImage* imgDefIcon)
-: leftMargin(lMargin), nameMargin(nMargin), hiMargin(hMargin),
-  parent(par), fs(menufs), qvWm(qvwm)
+: parent(par), leftMargin(lMargin), nameMargin(nMargin), hiMargin(hMargin),
+  fs(menufs), qvWm(qvwm)
 {
   int maxWidth = 0, width;
-  Dim maxImgSize(0, 0), size;
+  Dim maxImgSize(0, 0);
   int i, sep = 0;
   XSetWindowAttributes attributes;
   unsigned long valueMask;
@@ -337,6 +338,8 @@ Menu::~Menu()
  */
 void Menu::MapMenu(int x, int y, int dir)
 {
+  PlaySound(MenuPopupSound);
+
   if (GradMenuMap && mapped)
     XUnmapWindow(display, frame);
 
@@ -471,17 +474,8 @@ void Menu::UnmapMenu()
      */
     if (parent != NULL)
       XSetInputFocus(display, parent->frame, RevertToParent, CurrentTime);
-    else {
-      if (qvWm == rootQvwm) {
-	if (UseTaskbar)
-	  XSetInputFocus(display, taskBar->GetFrameWin(), RevertToParent,
-			 CurrentTime);
-	else
-	  XSetInputFocus(display, root, RevertToParent, CurrentTime);
-      }
-      else
-	XSetInputFocus(display, qvWm->GetWin(), RevertToParent, CurrentTime);
-    }
+    else
+      Qvwm::SetFocusToActiveWindow();
   }
 
   XUnmapWindow(display, frame);
@@ -525,7 +519,7 @@ void Menu::DrawFrame()
   xp[2].x = 0;
   xp[2].y = rc.height - 2;
 
-  XSetForeground(display, ::gc, lightGray.pixel);
+  XSetForeground(display, ::gc, gray.pixel);
   XDrawLines(display, frame, ::gc, xp, 3, CoordModeOrigin);
   
   xp[0].x = rc.width - 1;
@@ -535,7 +529,7 @@ void Menu::DrawFrame()
   xp[2].x = 0;
   xp[2].y = rc.height - 1;
 
-  XSetForeground(display, ::gc, black.pixel);
+  XSetForeground(display, ::gc, darkGrey.pixel);
   XDrawLines(display, frame, ::gc, xp, 3, CoordModeOrigin);
 
   xp[0].x = rc.width - 3;
@@ -914,7 +908,7 @@ void Menu::ExecShortCutKey(char key)
 	    SetMenuFocus(i);
 	  }
 	}
-	ExecFunction(func[i], i);
+	QvFunction::execFunction(func[i], this, i);
       }
   }
 }
@@ -936,10 +930,23 @@ Bool Menu::IsChecked(FuncNumber fn)
     if (TaskbarAutoHide)
       return True;
     break;
+    
+  case Q_TOGGLE_TASKBAR:
+    if (UseTaskbar && enableTaskbar)
+      return True;
+    break;
+
+  case Q_TOGGLE_PAGER:
+    if (UsePager && enablePager)
+      return True;
+    break;
+
+  default:
+    break;
   }
 
   return False;
-}    
+}
 
 Bool Menu::IsSelected(FuncNumber fn)
 {
@@ -967,9 +974,103 @@ Bool Menu::IsSelected(FuncNumber fn)
       if (taskBar->GetPos() == Taskbar::RIGHT)
 	return True;
     break;
+
+  default:
+    break;
   }
 
   return False;
+}
+
+/*
+ * IsSelectable --
+ *   Return True if the menu item is selectable.
+ */
+Bool Menu::IsSelectable(FuncNumber fn)
+{
+  ASSERT(qvWm);
+
+  switch (fn) {
+  case Q_NONE:
+    return False;
+    
+  case Q_RESTORE:
+    if (qvWm->CheckStatus(MINIMIZE_WINDOW | MAXIMIZE_WINDOW))
+      return True;
+    return False;
+
+  case Q_MOVE:
+  case Q_RESIZE:
+    if (qvWm->CheckStatus(MINIMIZE_WINDOW | MAXIMIZE_WINDOW))
+      return False;
+    return True;
+
+  case Q_MINIMIZE:
+    if (qvWm->CheckStatus(MINIMIZE_WINDOW) || qvWm->CheckFlags(NO_TBUTTON))
+      return False;
+    return True;
+
+  case Q_MAXIMIZE:
+    if (qvWm->CheckStatus(MAXIMIZE_WINDOW) &&
+	!qvWm->CheckStatus(MINIMIZE_WINDOW))
+      return False;
+    return True;
+
+  case Q_SEPARATOR:
+    return False;
+
+  case Q_BOTTOM:
+  case Q_TOP:
+  case Q_LEFT:
+  case Q_RIGHT:
+    if (UseTaskbar && !DisableDesktopChange)
+      return True;
+    else
+      return False;
+
+  case Q_LEFT_PAGING:
+    {
+      Rect rcRoot = rootQvwm->GetRect();
+      Rect rcVirt = paging->GetVirtRect();
+      if (paging->origin.x > rcVirt.x * rcRoot.width)
+	return True;
+      else
+	return False;
+    }
+
+  case Q_RIGHT_PAGING:
+    {
+      Rect rcRoot = rootQvwm->GetRect();
+      Rect rcVirt = paging->GetVirtRect();
+      if (paging->origin.x < (rcVirt.x + rcVirt.width - 1) * rcRoot.width)
+	return True;
+      else
+	return False;
+    }
+
+  case Q_UP_PAGING:
+    {
+      Rect rcRoot = rootQvwm->GetRect();
+      Rect rcVirt = paging->GetVirtRect();
+      if (paging->origin.y > rcVirt.y * rcRoot.height)
+	return True;
+      else
+	return False;
+    }
+    
+  case Q_DOWN_PAGING:
+    {
+      Rect rcRoot = rootQvwm->GetRect();
+      Rect rcVirt = paging->GetVirtRect();
+      if (paging->origin.y < (rcVirt.y + rcVirt.height - 1) * rcRoot.height)
+	return True;
+      else
+	return False;
+    }
+
+  default:
+    return True;
+  }
 }
 
 void Menu::Initialize()
