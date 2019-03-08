@@ -5,4 +5,4 @@ This is a fork/continuation of the QVWM window manager available many years ago,
 
 !! This is OBSOLTE SOFTWARE. DO NOT USE on production systems !!
 
-If you wish to see the original, untouched source code, you can do so via the orig-* branches. These will never be merged into master, so don't pull request them.
+If you wish to see the original, untouched source code, you can do so via the orig-* branches. These will never be merged into master, DO NOT pull request them.
