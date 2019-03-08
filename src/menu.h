@@ -1,7 +1,7 @@
 /*
  * menu.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,6 +112,7 @@ public:
   void SetRect(const Rect& rect) { rc = rect; }
   Rect GetRect() const { return rc; }
   void SetQvwm(Qvwm* qvwm) { qvWm = qvwm; }
+  Qvwm* GetQvwm() const { return qvWm; }
   Menu* GetChildMenu() const { return child; }
   
   virtual void MapMenu(int x, int y, int dir = GD_RIGHT | GD_DOWN);
@@ -126,11 +127,20 @@ public:
   virtual void Button1Press(Window win);
   virtual void Button1Release(Window win);
   virtual void PointerMotion(Window win);
-  virtual void ExecFunction(FuncNumber fn, int i);
+
   Bool IsSelectable(FuncNumber fn);
   void ExecShortCutKey(char key);
   Bool IsChecked(FuncNumber fn);
   Bool IsSelected(FuncNumber fn);
+
+  virtual void ExecFunction(FuncNumber fn, int i);
+  void ExtractChildMenu(int index);
+  void MoveFocusUp();
+  void MoveFocusDown();
+  void MoveFocusRight();
+  void MoveFocusLeft();
+  void ExecSelectedItem();
+  void ExecIndexedItem(int index);
 
   static void Initialize();
   static void UnmapAllMenus(Bool hideTaskbar = True);

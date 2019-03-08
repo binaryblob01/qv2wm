@@ -1,7 +1,7 @@
 /*
  * icon.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,8 +188,6 @@ void Icon::SetIconImage()
 void Icon::CreateShapedWindow()
 {
 #ifdef USE_SHAPE
-  Rect rect;
-
   // First, make the whole transparent (pixel value 0 is transparent).
   XSetForeground(display, gcShape, 0);
   XFillRectangle(display, shapeMask, gcShape, 0, 0, IconSize, IconSize);
@@ -415,9 +413,11 @@ void Icon::Button1Press(Time clickTime, const Point& ptRoot)
    */
   if (IsDoubleClick(iconClickTime, clickTime, event.ptPrevRoot, ptRoot)) {
     if (isBuiltin)
-      rootQvwm->ExecFunction(fn);
-    else
+      QvFunction::execFunction(fn);
+    else {
+      PlaySound(OpenSound);
       ExecCommand(exec);
+    }
     return;
   }
   else
@@ -431,6 +431,9 @@ void Icon::Button1Motion(const Point& ptRoot)
   XEvent ev;
   Point ptOld, ptNew, ptCur;
   Bool pointer = False;
+
+  if (DisableDesktopChange)
+    return;
 
   ptCur = Point(rc.x, rc.y);
   ptOld = ptRoot;
@@ -491,8 +494,8 @@ void Icon::Button1Motion(const Point& ptRoot)
 
     case ButtonPress:
       if (pointer) {
-	goto decide;
 	XUngrabPointer(display, CurrentTime);
+	goto decide;
       }
       return;
     }
@@ -683,9 +686,11 @@ void IconMenu::ExecFunction(FuncNumber fn, int i)
   case Q_EXEC_ICON:
     if (icon) {
       if (icon->IsBuiltin())
-	rootQvwm->ExecFunction(icon->GetFunc());
-      else
+	QvFunction::execFunction(icon->GetFunc());
+      else {
+	PlaySound(OpenSound);
 	ExecCommand(icon->GetExec());
+      }
     }
     break;
 
@@ -693,6 +698,10 @@ void IconMenu::ExecFunction(FuncNumber fn, int i)
     desktop.GetIconList().Remove(icon);
     delete icon;
     icon = NULL;
+    break;
+
+  default:
+    QvwmError("cannot execute a specified function");
     break;
   }
 }

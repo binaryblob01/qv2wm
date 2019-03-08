@@ -5,7 +5,7 @@ AC_INIT(src/qvwm.cc)
 
 QVWM_MAJOR_VERSION=1
 QVWM_MINOR_VERSION=1
-QVWM_MICRO_VERSION=7
+QVWM_MICRO_VERSION=11
 
 QVWM_VERSION=$QVWM_MAJOR_VERSION.$QVWM_MINOR_VERSION.$QVWM_MICRO_VERSION
 
@@ -19,6 +19,13 @@ AC_ARG_ENABLE(debug,
 	if test $enableval = yes ; then
 		AC_DEFINE(DEBUG)
 	fi)
+
+AC_ARG_ENABLE(rmtcmd,
+	[  --enable-rmtcmd         allow sending commands to qvwm [yes]],
+	if test $enableval = yes ; then
+		AC_DEFINE(ALLOW_RMTCMD)
+	fi,
+	AC_DEFINE(ALLOW_RMTCMD))
 
 AC_ARG_WITH(man,
 	[  --with-man=locale       set locale of installed manual (jp/fr/en) [guessed]],
@@ -36,9 +43,19 @@ AC_ARG_ENABLE(xsmp,
 	XSMP=guess)
 
 AC_ARG_WITH(qvwmdir,
-	[  --with-qvwmdir=DIR      qvwm resources in DIR [PREFIX/share/qvwm]],
+	[  --with-qvwmdir=DIR      qvwm resources are in DIR [PREFIX/share/qvwm]],
 	QVWMDIR=$withval,
 	QVWMDIR="")
+
+AC_ARG_WITH(imgdir,
+	[  --with-imgdir=DIR       qvwm image files are in DIR [QVWMDIR/images]],
+	IMGDIR=$withval,
+	IMGDIR="")
+
+AC_ARG_WITH(snddir,
+	[  --with-snddir=DIR       qvwm sound files are in DIR [QVWMDIR/sounds]],
+	SNDDIR=$withval,
+	SNDDIR="")
 
 AC_ARG_WITH(alsa,
 	[  --with-alsa             use ALSA for sound effects [guessed]],
@@ -51,7 +68,7 @@ AC_ARG_WITH(esd,
 	ESD=guess)
 
 AC_ARG_ENABLE(ss,
-	[  --enable-ss             enable screen saver functions],
+	[  --enable-ss             enable screen saver functions [yes]],
 	SS=$enableval,
 	SS=yes)
 
@@ -134,8 +151,7 @@ dnl Check first for --with-alsa and --with-esd specified explicitly
 if test $ALSA = yes ; then
 	AC_CHECK_LIB(asound, snd_cards,
 		[LIBS="$LIBS -lasound"
-		 AC_DEFINE(USE_ALSA)
-		 ESD=no],
+		 AC_DEFINE(USE_ALSA)],
 		AC_MSG_ERROR("System does not support ALSA"))
 fi
 
@@ -143,16 +159,14 @@ if test $ESD = yes ; then
 	AM_PATH_ESD(0.2.6,
 		[CXXFLAGS="$CXXFLAGS $ESD_CFLAGS"
 		 LIBS="$LIBS $ESD_LIBS"
-		 AC_DEFINE(USE_ESD)
-		 ALSA=no],
+		 AC_DEFINE(USE_ESD)],
 		AC_MSG_ERROR("Esd not installed"))
 fi
 
 if test $ALSA = guess ; then
 	AC_CHECK_LIB(asound, snd_cards,
 		[LIBS="$LIBS -lasound"
-		 AC_DEFINE(USE_ALSA)
-		 ESD=no],
+		 AC_DEFINE(USE_ALSA)],
 		AC_MSG_WARN("ALSA not used"))
 fi
 
@@ -234,6 +248,16 @@ if test -z "$QVWMDIR"; then
 fi
 AC_SUBST(QVWMDIR)
 
+if test -z "$IMGDIR"; then
+	IMGDIR=$QVWMDIR/images
+fi
+AC_SUBST(IMGDIR)
+
+if test -z "$SNDDIR"; then
+	SNDDIR=$QVWMDIR/sounds
+fi
+AC_SUBST(SNDDIR)
+
 AC_OUTPUT(Makefile
 	src/Makefile
 	src/bitmaps/Makefile
@@ -241,9 +265,9 @@ AC_OUTPUT(Makefile
 	sounds/Makefile
 	doc/Makefile
 	man/Makefile
+	rc/Makefile
 	rc/system.qvwmrc
 	rc/kanji.qvwmrc
 	rc/french.qvwmrc
 	rc/korean.qvwmrc
-	rc/light.qvwmrc
-	rc/Makefile)
+	rc/light.qvwmrc)

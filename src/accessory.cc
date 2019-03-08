@@ -1,7 +1,7 @@
 /*
  * accessary.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
@@ -150,7 +151,7 @@ void Accessory::CreateAccessory()
 
   XCloseDisplay(display);
 
-  _exit(0);
+  exit(0);
 }
 
 void Accessory::CreateShapedWindow()
@@ -241,13 +242,13 @@ Point Accessory::CalcPosition(char* pos, int* gravity)
       if (bitmask & YNegative)
 	pt.y = szRoot.height + pt.y - szImg.height;
 
-      if (bitmask & (XNegative | YNegative) == 0)
+      if ((bitmask & (XNegative | YNegative)) == 0)
 	*gravity = NorthWestGravity;
-      else if (bitmask & (XNegative | YNegative) == XNegative)
+      else if ((bitmask & (XNegative | YNegative)) == XNegative)
 	*gravity = NorthEastGravity;
-      else if (bitmask & (XNegative | YNegative) == YNegative)
+      else if ((bitmask & (XNegative | YNegative)) == YNegative)
 	*gravity = SouthWestGravity;
-      else if (bitmask & (XNegative | YNegative) == (XNegative | YNegative))
+      else if ((bitmask & (XNegative | YNegative)) == (XNegative | YNegative))
 	*gravity = SouthEastGravity;
     }    
     else {

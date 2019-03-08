@@ -6,8 +6,8 @@
 
 [Variables]
 LocaleName		= "ko_KR.eucKR"	; 한국어 로케일
-ImagePath		= "@QVWMDIR@/images"
-SoundPath		= "@QVWMDIR@/sounds"
+ImagePath		= "@IMGDIR@"
+SoundPath		= "@SNDDIR@"
 RestartOnFailure	= True		; restart on seg fault/bus error
 UseDebugger		= True
 HourGlassTime		= 1000
@@ -59,6 +59,7 @@ GradTaskbarMotionSpeed	= 10		; the speed
 TaskbarShowDelay	= 0		; delay for automatic show (ms)
 TaskbarHideDelay	= 500		; delay for automatic hide (ms)
 OnTopTaskbar		= True		; keep taskbar on top
+TaskbarButtonInScr	= False
 StartButtonTitle	= "시작"	; string for start button
 StartButtonMessage	= "시작하려면 이곳을 누르십시요."
 
@@ -104,6 +105,11 @@ TooltipDisplayTime	= 6000
 ; screen saver
 ScreenSaver		= "xlock"	; screen saver program
 ScreenSaverDelay	= 600		; start after 10 minutes
+
+; sound
+EnableSound		= True		; enable sound facility
+EnableAlsa		= False		; enable ALSA (Linux only)
+EnableEsd		= False		; enable EsounD
 
 ; theme
 include			@QVWMDIR@/default.qvwm-theme

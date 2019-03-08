@@ -1,7 +1,7 @@
 /*
  * frame.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -265,7 +265,7 @@ void Qvwm::DrawFrame(Window win)
 
   if (CheckFlags(BORDER)) {
     if (win == side[F_LEFT]) {  // left side
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLine(display, side[F_LEFT], gc, 0, 0, 0, rcSide[F_LEFT].height - 1);
       XSetForeground(display, gc, white.pixel);
       XDrawLine(display, side[F_LEFT], gc, 1, 0, 1, rcSide[F_LEFT].height - 1);
@@ -276,14 +276,14 @@ void Qvwm::DrawFrame(Window win)
       XDrawLine(display, side[F_RIGHT], gc,
 		rcSide[F_RIGHT].width - 2, 0,
 		rcSide[F_RIGHT].width - 2, rcSide[1].height - 1);
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLine(display, side[F_RIGHT], gc,
 		rcSide[F_RIGHT].width - 1, 0,
 		rcSide[F_RIGHT].width - 1, rcSide[F_RIGHT].height - 1);
       return;
     }
     else if (win == side[F_TOP]) {  // top side
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLine(display, side[F_TOP], gc, 0, 0, rcSide[F_TOP].width - 1, 0);
       XSetForeground(display, gc, white.pixel);
       XDrawLine(display, side[F_TOP], gc, 0, 1, rcSide[F_TOP].width - 1, 1);
@@ -294,7 +294,7 @@ void Qvwm::DrawFrame(Window win)
       XDrawLine(display, side[F_BOTTOM], gc,
 		0, rcSide[F_BOTTOM].height - 2,
 		rcSide[F_BOTTOM].width - 1, rcSide[F_BOTTOM].height - 2);
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLine(display, side[F_BOTTOM], gc,
 		0, rcSide[F_BOTTOM].height - 1,
 		rcSide[F_BOTTOM].width - 1, rcSide[F_BOTTOM].height - 1);
@@ -308,7 +308,7 @@ void Qvwm::DrawFrame(Window win)
       xp[2].x = 0;
       xp[2].y = rcCorner[F_TLEFT].height - 1;
 
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLines(display, corner[F_TLEFT], gc, xp, 3, CoordModeOrigin);
 
       xp[0].x = rcCorner[F_TLEFT].width - 1;
@@ -323,7 +323,7 @@ void Qvwm::DrawFrame(Window win)
       return;
     }
     else if (win == corner[F_TRIGHT]) {  // top-right corner
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLine(display, corner[F_TRIGHT], gc,
 		0, 0, rcCorner[F_TRIGHT].width - 2, 0);
       XSetForeground(display, gc, white.pixel);
@@ -333,14 +333,14 @@ void Qvwm::DrawFrame(Window win)
       XDrawLine(display, corner[F_TRIGHT], gc,
 		rcCorner[F_TRIGHT].width - 2, 1,
 		rcCorner[F_TRIGHT].width - 2, rcCorner[F_TRIGHT].height - 1);
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLine(display, corner[F_TRIGHT], gc,
 		rcCorner[F_TRIGHT].width - 1, 0,
 		rcCorner[F_TRIGHT].width - 1, rcCorner[F_TRIGHT].height - 1);
       return;
     }
     else if (win == corner[F_BLEFT]) {  // bottom-left corner
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLine(display, corner[F_BLEFT], gc,
 		0, 0, 0, rcCorner[F_BLEFT].height - 2);
       XSetForeground(display, gc, white.pixel);
@@ -350,7 +350,7 @@ void Qvwm::DrawFrame(Window win)
       XDrawLine(display, corner[F_BLEFT], gc,
 		1, rcCorner[F_BLEFT].width - 2,
 		rcCorner[F_BLEFT].width - 1, rcCorner[F_BLEFT].height - 2);
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLine(display, corner[F_BLEFT], gc,
 		0, rcCorner[F_BLEFT].width - 1,
 		rcCorner[F_BLEFT].width - 1, rcCorner[F_BLEFT].height - 1);
@@ -374,7 +374,7 @@ void Qvwm::DrawFrame(Window win)
       xp[2].x = 0;
       xp[2].y = rcCorner[F_BRIGHT].height - 1;
       
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLines(display, corner[F_BRIGHT], gc, xp, 3, CoordModeOrigin);
       return;
     }
@@ -384,11 +384,11 @@ void Qvwm::DrawFrame(Window win)
     if (win == edge[F_LEFT]) {
       XSetForeground(display, gc, darkGray.pixel);
       XDrawLine(display, edge[F_LEFT], gc, 0, 0, 0, rcEdge[F_LEFT].height - 1);
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLine(display, edge[F_LEFT], gc, 1, 0, 1, rcEdge[F_LEFT].height - 1);
     }
     else if (win == edge[F_RIGHT]) {
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLine(display, edge[F_RIGHT], gc,
 		0, 0, 0, rcEdge[F_RIGHT].height - 1);
       XSetForeground(display, gc, white.pixel);
@@ -407,7 +407,7 @@ void Qvwm::DrawFrame(Window win)
       XSetForeground(display, gc, darkGray.pixel);
       XDrawLines(display, edge[F_TOP], gc, xp, 3, CoordModeOrigin);
 
-      XSetForeground(display, gc, black.pixel);
+      XSetForeground(display, gc, darkGrey.pixel);
       XDrawLine(display, edge[F_TOP], gc,
 		1, yBase + 1, rcEdge[F_TOP].width - 2, yBase + 1);
 
@@ -424,7 +424,7 @@ void Qvwm::DrawFrame(Window win)
       XSetForeground(display, gc, white.pixel);
       XDrawLines(display, edge[F_BOTTOM], gc, xp, 3, CoordModeOrigin);
 
-      XSetForeground(display, gc, lightGray.pixel);
+      XSetForeground(display, gc, gray.pixel);
       XDrawLine(display, edge[F_BOTTOM], gc,
 		1, 0, rcEdge[F_BOTTOM].width - 2, 0);
 

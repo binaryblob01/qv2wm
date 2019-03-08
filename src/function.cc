@@ -1,7 +1,7 @@
 /*
  * function.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include <X11/xpm.h>
 #include "main.h"
 #include "misc.h"
+#include "function.h"
 #include "qvwm.h"
 #include "menu.h"
 #include "startmenu.h"
@@ -48,103 +49,136 @@
 #include "focus_mgr.h"
 #include "desktop.h"
 #include "gnome.h"
+#include "hash.h"
 
 /* XXX */
 KeyCode swCode;
 unsigned int swMod;
 
-/*
- * ExecFunction --
- *   Execute qvwm function.
- */
-void Menu::ExecFunction(FuncNumber fn, int num)
+Bool QvFunction::execFunction(FuncNumber fn, Menu* menu, int index)
 {
-  Point ptFrame, pt, ptJunk;
-  int pFocus;
-  int borderWidth, topBorder, titleHeight, titleEdge;
-  Rect rect;
-  Window junkRoot, junkChild;
-  unsigned int mask;
-  int gDir;
+  if (index < 0 || index >= menu->GetItemNum()) {
+    QvwmError("invalid menu item index: %d", index);
+    return True;
+  }
 
   switch (fn) {
-  /*
-   * Do nothing.
-   */
-  case Q_NONE:
-    break;
-
   /*
    * Extract the menu.
    */
   case Q_DIR:
-    ASSERT(num >= 0 && num < nitems);
-
-    // delayed menu creation
-    if (next[num] == NULL) {
-      ASSERT(childItem[num]);
-      next[num] = new Menu(childItem[num], fs, this, qvWm,
-			   leftMargin, nameMargin, hiMargin,
-			   imgParentFolder, imgParentIcon);
-    }
-
-    switch (fDir) {
-    /*
-     * To right side.
-     */
-    case RIGHT:
-      ptFrame.x = rc.x + rc.width - 7;
-      if (ptFrame.x + next[num]->rc.width > rcScreen.width-1) {
-	ptFrame.x = rc.x - next[num]->rc.width + MenuFrameWidth;
-	fDir = LEFT;
-	gDir = GD_LEFT;
-      }
-      else
-	gDir = GD_RIGHT;
-      break;
-
-    /*
-     * To left side.
-     */
-    case LEFT:
-      ptFrame.x = rc.x - next[num]->rc.width+MenuFrameWidth;
-      if (ptFrame.x + next[num]->rc.width < 0) {
-	ptFrame.x = rc.x + rc.width - 7;
-	fDir = RIGHT;
-	gDir = GD_RIGHT;
-      }
-      else
-	gDir = GD_LEFT;
-      break;
-    }
-
-    ptFrame.y = rc.y + CalcItemYPos(num) - MenuFrameWidth;
-    if (ptFrame.y + next[num]->rc.height > rcScreen.height - 1) {
-      ptFrame.y = ptFrame.y + itemHeight - next[num]->rc.height +
-	MenuFrameWidth * 2;
-      gDir |= GD_UP;
-    }
-    else
-      gDir |= GD_DOWN;
-
-    child = next[num];
-    child->SetQvwm(qvWm);
-    child->MapMenu(ptFrame.x, ptFrame.y, gDir);
+    menu->ExtractChildMenu(index);
     break;
 
   /*
    * Execute the external command.
    */
   case Q_EXEC:
-    ASSERT(num >= 0 && num < nitems);
-    ExecCommand(exec[num]);
+    PlaySound(MenuCommandSound, True);
+    PlaySound(OpenSound);
+    menu->ExecIndexedItem(index);
     break;
 
+  default:
+    PlaySound(MenuCommandSound);
+    return execFunction(fn, menu);
+  }
+
+  return True;
+}
+
+// functions for a menu or the selected menu item
+Bool QvFunction::execFunction(FuncNumber fn, Menu* menu)
+{
+  Window junkRoot, junkChild;
+  Point ptRoot, ptJunk;
+  unsigned int mask;
+  int borderWidth, topBorder, titleHeight, titleEdge;
+  Rect rect;
+
+  ASSERT(menu);
+
+  switch (fn) {
+  /*
+   * Popup the menu.
+   */
+  case Q_POPUP_MENU:
+    if (!menu->CheckMapped()) {
+      Qvwm* qvWm = menu->GetQvwm();
+
+      Menu::UnmapAllMenus();
+
+      if (qvWm == rootQvwm) {
+	XQueryPointer(display, root, &junkRoot, &junkChild,
+		      &ptRoot.x, &ptRoot.y, &ptJunk.x, &ptJunk.y, &mask);
+	menu->MapMenu(ptRoot.x, ptRoot.y);
+      }
+      else {
+	qvWm->GetBorderAndTitle(borderWidth, topBorder, titleHeight,
+				titleEdge);
+	rect = qvWm->GetRect();
+ 	menu->MapMenu(rect.x + topBorder, rect.y + topBorder + titleHeight);
+      }
+    }
+    break;
+
+  /*
+   * Popdown one menu.
+   */
+  case Q_POPDOWN_MENU:
+    // Erase only one menu.
+    menu->UnmapMenu();
+    break;
+
+  /*
+   * Move the focus of menu.
+   */
+  case Q_UP_FOCUS:
+    menu->MoveFocusUp();
+    break;
+    
+  case Q_DOWN_FOCUS:
+    menu->MoveFocusDown();
+    break;
+
+  case Q_RIGHT_FOCUS:
+    menu->MoveFocusRight();
+    break;
+
+  case Q_LEFT_FOCUS:
+    menu->MoveFocusLeft();
+    break;
+    
+  /*
+   * Execute the function of the menu item.
+   */
+  case Q_ACTION:
+    menu->ExecSelectedItem();
+    break;
+
+  default:
+    return execFunction(fn, menu->GetQvwm());
+  }
+
+  return True;
+}
+
+Bool QvFunction::execFunction(FuncNumber fn, Qvwm* qvWm)
+{
+  Point pt, ptJunk;
+  Rect rect;
+  Window junkRoot, junkChild;
+  unsigned int mask;
+
+  ASSERT(qvWm);
+
+  Menu::UnmapAllMenus();
+
+  switch (fn) {
   /*
    * Restore the window pos & size.
    */
   case Q_RESTORE:
-    ASSERT(qvWm);
     if (qvWm->CheckStatus(MAXIMIZE_WINDOW) &&
 	!qvWm->CheckStatus(MINIMIZE_WINDOW)) {
       ASSERT(qvWm->fButton[1]);
@@ -163,7 +197,6 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    * Move the window.
    */
   case Q_MOVE:
-    ASSERT(qvWm);
     rect = qvWm->GetRect();
     XDefineCursor(display, root, cursor[MOVE]);
     XQueryPointer(display, root, &junkRoot, &junkChild, &pt.x, &pt.y,
@@ -177,7 +210,6 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    * Resize the window.
    */
   case Q_RESIZE:
-    ASSERT(qvWm);
     rect = qvWm->GetRect();
     XDefineCursor(display, root, cursor[MOVE]);
     XQueryPointer(display, root, &junkRoot, &junkChild, &pt.x, &pt.y,
@@ -191,7 +223,6 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    * Minimize the window.
    */
   case Q_MINIMIZE:
-    ASSERT(qvWm);
     qvWm->MinimizeWindow();
     break;
 
@@ -199,7 +230,6 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    * Maximize the window.
    */
   case Q_MAXIMIZE:
-    ASSERT(qvWm);
     ASSERT(qvWm->fButton[1]);
     qvWm->fButton[1]->ChangeImage(FrameButton::RESTORE);
     qvWm->MaximizeWindow();
@@ -211,35 +241,30 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    * Expand the window "in place" without obscuring other windows
    */
   case Q_EXPAND:
-    ASSERT(qvWm);
     qvWm->ExpandWindow(EXPAND_LEFT | EXPAND_RIGHT | EXPAND_UP | EXPAND_DOWN);
     rootQvwm->SetFocus();
     qvWm->SetFocus();
     break;
 
   case Q_EXPAND_LEFT:
-    ASSERT(qvWm);
     qvWm->ExpandWindow(EXPAND_LEFT);
     rootQvwm->SetFocus();
     qvWm->SetFocus();
     break;
 
   case Q_EXPAND_RIGHT:
-    ASSERT(qvWm);
     qvWm->ExpandWindow(EXPAND_RIGHT);
     rootQvwm->SetFocus();
     qvWm->SetFocus();
     break;
 
   case Q_EXPAND_UP:
-    ASSERT(qvWm);
     qvWm->ExpandWindow(EXPAND_UP);
     rootQvwm->SetFocus();
     qvWm->SetFocus();
     break;
 
   case Q_EXPAND_DOWN:
-    ASSERT(qvWm);
     qvWm->ExpandWindow(EXPAND_DOWN);
     rootQvwm->SetFocus();
     qvWm->SetFocus();
@@ -250,407 +275,31 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    */
   case Q_CLOSE:
     if (qvWm == rootQvwm) {
-      ExecFunction(Q_EXIT, 0);
-      return;
+      QvFunction::execFunction(Q_EXIT);
     }
-    ASSERT(qvWm);
-    qvWm->FetchWMProtocols();
-    if (qvWm->CheckFlags(WM_DELETE_WINDOW))
-      qvWm->CloseWindow();
-    else
-      qvWm->KillClient();
+    else {
+      qvWm->FetchWMProtocols();
+      if (qvWm->CheckFlags(WM_DELETE_WINDOW)) {
+        PlaySound(CloseSound);
+	qvWm->CloseWindow();
+      }
+      else
+	qvWm->KillClient();
+    }
     break;
 
   /*
    * Kill the application.
    */
   case Q_KILL:
-    if (qvWm != rootQvwm) {
-      ASSERT(qvWm);
+    if (qvWm != rootQvwm)
       qvWm->KillClient();
-    }
-    break;
-
-  /*
-   * Exit qvwm.
-   */
-  case Q_EXIT:
-    if (!UseExitDialog) {
-      if (UseConfirmDialog) {
-	if (confirmDlg == NULL)
-	  confirmDlg = new ConfirmDialog();
-	confirmDlg->MapDialog();
-	confirmDlg->ProcessDialog();
-      }
-      else
-	FinishQvwm();
-    }
-    else {
-      if (exitDlg == NULL)
-	exitDlg = new ExitDialog();
-      exitDlg->MapDialog();
-      exitDlg->ProcessDialog();
-    }
-    break;
-
-  /*
-   * Move taskbar to the bottom of screen.
-   */
-  case Q_BOTTOM:
-    if (UseTaskbar)
-      taskBar->MoveTaskbar(Taskbar::BOTTOM);
-    break;
-
-  /*
-   * Move taskbar to the top of screen.
-   */
-  case Q_TOP:
-    if (UseTaskbar)
-      taskBar->MoveTaskbar(Taskbar::TOP);
-    break;
-
-  /*
-   * Move taskbar to the left of screen.
-   */
-  case Q_LEFT:
-    if (UseTaskbar)
-      taskBar->MoveTaskbar(Taskbar::LEFT);
-    break;
-
-  /*
-   * Move taskbar to the right of screen.
-   */
-  case Q_RIGHT:
-    if (UseTaskbar)
-      taskBar->MoveTaskbar(Taskbar::RIGHT);
-    break;
-
-  /*
-   * Restart qvwm.
-   */
-  case Q_RESTART:
-    RestartQvwm();
-    break;
-
-  /*
-   * Switch the window to next window in focus stack.
-   */
-  case Q_CHANGE_WINDOW:
-    focusMgr.RollFocus(True);
-    break;
-
-  case Q_CHANGE_WINDOW_BACK:
-    focusMgr.RollFocus(False);
-    break;
-
-  case Q_CHANGE_WINDOW_INSCR:
-    focusMgr.RollFocusWithinScreen(True);
-    break;
-
-  case Q_CHANGE_WINDOW_BACK_INSCR:
-    focusMgr.RollFocusWithinScreen(False);
-    break;
-
-  /*
-   * Switch the task to another task with the task switcher.
-   */
-  case Q_SWITCH_TASK:
-    if (taskSwitcher == NULL)
-      taskSwitcher = new TaskSwitcher();
-    taskSwitcher->SwitchTask(True, swCode, swMod);
-    break;
-
-  /*
-   * Switch back the task to another task with the task switcher.
-   */
-  case Q_SWITCH_TASK_BACK:
-    if (taskSwitcher == NULL)
-      taskSwitcher = new TaskSwitcher();
-    taskSwitcher->SwitchTask(False, swCode, swMod);
-    break;
-
-  /*
-   * Popup the start menu.
-   */
-  case Q_POPUP_START_MENU:
-    if (startMenu == NULL)
-      startMenu = new StartMenu(StartMenuItem);
-
-    if (!startMenu->CheckMapped()) {
-      rootQvwm->SetFocus();
-      startMenu->MapMenu();
-    }
-    break;
-
-  /*
-   * Popup the desktop menu.
-   */
-  case Q_POPUP_DESKTOP_MENU:
-    rootQvwm->SetFocus();
-    rootQvwm->ctrlMenu->ExecFunction(Q_POPUP_MENU, 0);
-    break;
-
-  /*
-   * Popup the menu.
-   */
-  case Q_POPUP_MENU:
-    if (!CheckMapped()) {
-      ASSERT(qvWm);
-      if (qvWm == rootQvwm) {
-	Window junkRoot, junkChild;
-	Point ptRoot, ptJunk;
-	unsigned int mask;
-
-	XQueryPointer(display, root, &junkRoot, &junkChild,
-		      &ptRoot.x, &ptRoot.y, &ptJunk.x, &ptJunk.y, &mask);
-	MapMenu(ptRoot.x, ptRoot.y);
-      }
-      else {
-	qvWm->GetBorderAndTitle(borderWidth, topBorder, titleHeight,
-				titleEdge);
-	rect = qvWm->GetRect();
-	MapMenu(rect.x + topBorder, rect.y + topBorder + titleHeight);
-      }
-    }
-    break;
-
-  /*
-   * Popdown one menu.
-   */
-  case Q_POPDOWN_MENU:
-    // Erasemenu only one menu.
-    UnmapMenu();
-    break;
-
-  /*
-   * Popdown all menu.
-   */
-  case Q_POPDOWN_ALL_MENU:
-    UnmapAllMenus();
-    break;
-
-  /*
-   * Move the focus of menu up.
-   */
-  case Q_UP_FOCUS:
-    if (iFocus == -1) {
-      iFocus = nitems - 1;
-      while (func[iFocus] == Q_SEPARATOR)
-	if (--iFocus == -1)
-	  return;
-    }
-    else {
-      ASSERT(iFocus >= 0 && iFocus < nitems);
-      pFocus = iFocus;
-
-      do {
-	if (--iFocus == -1)
-	  iFocus = nitems - 1;
-      } while (func[iFocus] == Q_SEPARATOR);
-
-      SetMenuFocus(pFocus);
-    }
-    ASSERT(iFocus >= 0 && iFocus < nitems);
-    SetMenuFocus(iFocus);
-    break;
-    
-  /*
-   * Move the focus of menu down.
-   */
-  case Q_DOWN_FOCUS:
-    if (iFocus == -1) {
-      iFocus = 0;
-      while (func[iFocus] == Q_SEPARATOR)
-	if (++iFocus == nitems)
-	  return;
-    }
-    else {
-      ASSERT(iFocus >= 0 && iFocus < nitems);
-      pFocus = iFocus;
-
-      do {
-	if (++iFocus == nitems)
-	  iFocus = 0;
-      } while (func[iFocus] == Q_SEPARATOR);
-
-      SetMenuFocus(pFocus);
-    }
-    ASSERT(iFocus >= 0 && iFocus < nitems);
-    SetMenuFocus(iFocus);
-    break;
-
-  /*
-   * Move the focus of menu right.
-   */
-  case Q_RIGHT_FOCUS:
-    if (fDir == RIGHT) {
-      if (iFocus == -1)
-	break;
-      ASSERT(iFocus >= 0 && iFocus < nitems);
-      if (func[iFocus] == Q_DIR) {
-	ExecFunction(Q_DIR, iFocus);
-	ASSERT(child);
-	child->ExecFunction(Q_DOWN_FOCUS, 0);
-      }
-    }
-    else {
-      ASSERT(fDir == LEFT);
-      if (parent != NULL)
-	UnmapMenu();
-    }
-    break;
-
-  /*
-   * Move the focus of menu left.
-   */
-  case Q_LEFT_FOCUS:
-    if (fDir == LEFT) {
-      if (iFocus == -1)
-	break;
-      ASSERT(iFocus >= 0 && iFocus < nitems);
-      if (func[iFocus] == Q_DIR) {
-	ExecFunction(Q_DIR, iFocus);
-	ASSERT(child);
-	child->ExecFunction(Q_DOWN_FOCUS, 0);
-      }
-    }
-    else {
-      ASSERT(fDir == RIGHT);
-      if (parent != NULL)
-	UnmapMenu();
-    }
-    break;
-    
-  /*
-   * Execute the function of the menu item.
-   */
-  case Q_ACTION:
-    ASSERT(iFocus >= 0 && iFocus < nitems);
-    if (IsSelectable(func[iFocus])) {
-      pFocus = iFocus;
-      if (func[iFocus] != Q_DIR)
-	UnmapAllMenus();
-
-      ExecFunction(func[pFocus], pFocus);
-    }
-    break;
-
-  /*
-   * Switch to left virtual page.
-   */
-  case Q_LEFT_PAGING:
-    {
-      if (Menu::CheckAnyMenusMapped())
-	return;
-
-      Rect rcRoot = rootQvwm->GetRect();
-      Point oldOrigin = paging->origin;
-
-      ASSERT(paging);
-
-      paging->origin.x -= rcRoot.width;
-      paging->PagingAllWindows(oldOrigin);
-
-      desktop.ChangeFocusToCursor();
-    }
-    break;
-
-  /*
-   * Switch to right virtual page.
-   */
-  case Q_RIGHT_PAGING:
-    {
-      if (Menu::CheckAnyMenusMapped())
-	return;
-
-      Rect rcRoot = rootQvwm->GetRect();
-      Point oldOrigin = paging->origin;
-
-      ASSERT(paging);
-
-      paging->origin.x += rcRoot.width;
-      paging->PagingAllWindows(oldOrigin);
-
-      desktop.ChangeFocusToCursor();
-    }
-    break;
-
-  /*
-   * Switch to up virtual page.
-   */
-  case Q_UP_PAGING:
-    {
-      if (Menu::CheckAnyMenusMapped())
-	return;
-
-      Rect rcRoot = rootQvwm->GetRect();
-      Point oldOrigin = paging->origin;
-
-      ASSERT(paging);
-
-      paging->origin.y -= rcRoot.height;
-      paging->PagingAllWindows(oldOrigin);
-
-      desktop.ChangeFocusToCursor();
-    }
-    break;
-
-  /*
-   * Switch to down virtual page.
-   */
-  case Q_DOWN_PAGING:
-    {
-      if (Menu::CheckAnyMenusMapped())
-	return;
-
-      Rect rcRoot = rootQvwm->GetRect();
-      Point oldOrigin = paging->origin;
-
-      ASSERT(paging);
-
-      paging->origin.y += rcRoot.height;
-      paging->PagingAllWindows(oldOrigin);
-
-      desktop.ChangeFocusToCursor();
-    }
-    break;
-
-  /*
-   * Line up desktop icons
-   */ 
-  case Q_LINEUP_ICON:
-    desktop.LineUpAllIcons();
-    break;
-
-  case Q_OVERLAP:
-    rect = Rect(paging->origin.x, paging->origin.y,
-		rcScreen.width, rcScreen.height);
-    desktop.Overlap(rect);
-    break;
-
-  case Q_TILE_HORZ:
-    rect = Rect(paging->origin.x, paging->origin.y,
-		rcScreen.width, rcScreen.height);
-    desktop.TileHorz(rect);
-    break;
-
-  case Q_TILE_VERT:
-    rect = Rect(paging->origin.x, paging->origin.y,
-		rcScreen.width, rcScreen.height);
-    desktop.TileVert(rect);
-    break;
-
-  case Q_MINIMIZE_ALL:
-    rect = Rect(paging->origin.x, paging->origin.y,
-		rcScreen.width, rcScreen.height);
-    desktop.MinimizeAll(rect);
     break;
 
   /*
    * Raise a window
    */
   case Q_RAISE:
-    ASSERT(qvWm);
     qvWm->RaiseWindow(True);
     break;
     
@@ -658,7 +307,6 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    * Lower a window
    */
   case Q_LOWER:
-    ASSERT(qvWm);
     qvWm->LowerWindow();
     break;
 
@@ -667,7 +315,6 @@ void Menu::ExecFunction(FuncNumber fn, int num)
    */
   case Q_TOGGLE_ONTOP:
     if (qvWm != rootQvwm) {
-      ASSERT(qvWm);
       if (qvWm->CheckFlags(ONTOP)) {
 	qvWm->ResetFlags(ONTOP);
 	desktop.GetOnTopList().Remove(qvWm);
@@ -696,136 +343,461 @@ void Menu::ExecFunction(FuncNumber fn, int num)
     }
     break;
 
-  case Q_TOGGLE_AUTOHIDE:
-    if (!UseTaskbar)
-      break;
+  default:
+    return execFunction(fn);
+  }
 
-    if (TaskbarAutoHide) {
-      TaskbarAutoHide = False;
-      if (taskBar->IsHiding())
-	taskBar->ShowTaskbar();
-      rcScreen = taskBar->GetScreenRectOnShowing();
-      if (UsePager) {
-	ASSERT(pager);
-	pager->RecalcPager();
+  return True;
+}
+
+Bool QvFunction::execFunction(FuncNumber fn)
+{
+  Rect rect;
+
+  Menu::UnmapAllMenus(False);
+
+  switch (fn) {
+  /*
+   * Do nothing.
+   */
+  case Q_NONE:
+    break;
+
+  /*
+   * Exit qvwm.
+   */
+  case Q_EXIT:
+    if (!UseExitDialog) {
+      if (UseConfirmDialog) {
+	if (confirmDlg == NULL)
+	  confirmDlg = new ConfirmDialog();
+	confirmDlg->MapDialog();
+	confirmDlg->ProcessDialog();
       }
+      else
+	FinishQvwm();
     }
     else {
-      TaskbarAutoHide = True;
-      rcScreen = taskBar->GetScreenRectOnHiding();
-      taskBar->HideTaskbar();
-      if (UsePager) {
-	ASSERT(pager);
-	pager->RecalcPager();
-      }
+      if (exitDlg == NULL)
+	exitDlg = new ExitDialog();
+      exitDlg->MapDialog();
+      exitDlg->ProcessDialog();
     }
+    break;
+
+  /*
+   * Restart qvwm.
+   */
+  case Q_RESTART:
+    RestartQvwm();
+    break;
+
+  /*
+   * Switch the task to another task with the task switcher.
+   */
+  case Q_SWITCH_TASK:
+    if (taskSwitcher == NULL)
+      taskSwitcher = new TaskSwitcher();
+    taskSwitcher->SwitchTask(True, swCode, swMod);
+    break;
+
+  /*
+   * Switch back the task to another task with the task switcher.
+   */
+  case Q_SWITCH_TASK_BACK:
+    if (taskSwitcher == NULL)
+      taskSwitcher = new TaskSwitcher();
+    taskSwitcher->SwitchTask(False, swCode, swMod);
+    break;
+
+  /*
+   * Switch the window to next window in focus stack.
+   */
+  case Q_CHANGE_WINDOW:
+    focusMgr.RollFocus(True);
+    break;
+
+  case Q_CHANGE_WINDOW_BACK:
+    focusMgr.RollFocus(False);
+    break;
+
+  case Q_CHANGE_WINDOW_INSCR:
+    focusMgr.RollFocusWithinScreen(True);
+    break;
+
+  case Q_CHANGE_WINDOW_BACK_INSCR:
+    focusMgr.RollFocusWithinScreen(False);
     break;
 
   case Q_DESKTOP_FOCUS:
     rootQvwm->SetFocus();
     break;
 
+  /*
+   * Popup the start menu.
+   */
+  case Q_POPUP_START_MENU:
+    if (startMenu == NULL)
+      startMenu = new StartMenu(StartMenuItem);
+
+    if (!startMenu->CheckMapped()) {
+      rootQvwm->SetFocus();
+      startMenu->MapMenu();
+    }
+    break;
+
+  /*
+   * Popup the desktop menu.
+   */
+  case Q_POPUP_DESKTOP_MENU:
+    rootQvwm->SetFocus();
+    QvFunction::execFunction(Q_POPUP_MENU, rootQvwm->ctrlMenu);
+    break;
+
+  /*
+   * Popdown all menu.
+   */
+  case Q_POPDOWN_ALL_MENU:
+    Menu::UnmapAllMenus();
+    break;
+
+  /*
+   * Switch to left virtual page.
+   */
+  case Q_LEFT_PAGING:
+    paging->SwitchPageLeft();
+    break;
+
+  case Q_RIGHT_PAGING:
+    paging->SwitchPageRight();
+    break;
+
+  case Q_UP_PAGING:
+    paging->SwitchPageUp();
+    break;
+
+  case Q_DOWN_PAGING:
+    paging->SwitchPageDown();
+    break;
+
+    /*
+     * Rearrange windows
+     */
+  case Q_OVERLAP:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.Overlap(True, rect);
+    break;
+
+  case Q_OVERLAP_INSCR:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.Overlap(False, rect);
+    break;
+
+  case Q_TILE_HORZ:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.TileHorz(True, rect);
+    break;
+
+  case Q_TILE_HORZ_INSCR:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.TileHorz(False, rect);
+    break;
+
+  case Q_TILE_VERT:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.TileVert(True, rect);
+    break;
+
+  case Q_TILE_VERT_INSCR:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.TileVert(False, rect);
+    break;
+
+  case Q_MINIMIZE_ALL:
+    desktop.MinimizeAll(True);
+    break;
+
+  case Q_MINIMIZE_ALL_INSCR:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.MinimizeAll(False, rect);
+    break;
+
+  case Q_RESTORE_ALL:
+    desktop.RestoreAll(True);
+    break;
+
+  case Q_RESTORE_ALL_INSCR:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.RestoreAll(False, rect);
+    break;
+
+  case Q_CLOSE_ALL:
+    desktop.CloseAll(True);
+    break;
+
+  case Q_CLOSE_ALL_INSCR:
+    rect = Rect(paging->origin.x, paging->origin.y,
+		rcScreen.width, rcScreen.height);
+    desktop.CloseAll(False, rect);
+    break;
+
+  /*
+   * Move taskbar.
+   */
+  case Q_BOTTOM:
+    if (UseTaskbar && !DisableDesktopChange)
+      taskBar->MoveTaskbar(Taskbar::BOTTOM);
+    break;
+
+  case Q_TOP:
+    if (UseTaskbar && !DisableDesktopChange)
+      taskBar->MoveTaskbar(Taskbar::TOP);
+    break;
+
+  case Q_LEFT:
+    if (UseTaskbar && !DisableDesktopChange)
+      taskBar->MoveTaskbar(Taskbar::LEFT);
+    break;
+
+  case Q_RIGHT:
+    if (UseTaskbar && !DisableDesktopChange)
+      taskBar->MoveTaskbar(Taskbar::RIGHT);
+    break;
+
+  case Q_TOGGLE_TASKBAR:
+    if (UseTaskbar && !DisableDesktopChange) {
+      if (enableTaskbar)
+	execFunction(Q_DISABLE_TASKBAR);
+      else
+	execFunction(Q_ENABLE_TASKBAR);
+    }
+    break;
+
+  case Q_ENABLE_TASKBAR:
+    if (UseTaskbar && !DisableDesktopChange) {
+      if (!enableTaskbar) {
+	enableTaskbar = True;
+	taskBar->MapTaskbar();
+      }
+    }
+    break;
+
+  case Q_DISABLE_TASKBAR:
+    if (UseTaskbar && !DisableDesktopChange) {
+      if (enableTaskbar) {
+	enableTaskbar = False;
+	taskBar->UnmapTaskbar();
+      }
+    }
+    break;
+
+  case Q_TOGGLE_AUTOHIDE:
+    if (UseTaskbar && !DisableDesktopChange) {
+      if (TaskbarAutoHide)
+	execFunction(Q_DISABLE_AUTOHIDE);
+      else
+	execFunction(Q_ENABLE_AUTOHIDE);
+    }
+    break;
+
+  case Q_ENABLE_AUTOHIDE:
+    if (UseTaskbar && !DisableDesktopChange) {
+      if (!TaskbarAutoHide) {
+	TaskbarAutoHide = True;
+	rcScreen = taskBar->GetScreenRectOnHiding();
+	taskBar->HideTaskbar();
+	if (UsePager) {
+	  ASSERT(pager);
+	  pager->RecalcPager();
+	}
+      }
+    }
+    break;
+
+  case Q_DISABLE_AUTOHIDE:
+    if (UseTaskbar && !DisableDesktopChange) {
+      if (TaskbarAutoHide) {
+	TaskbarAutoHide = False;
+	if (taskBar->IsHiding())
+	  taskBar->ShowTaskbar();
+	rcScreen = taskBar->GetScreenRectOnShowing();
+	if (UsePager) {
+	  ASSERT(pager);
+	  pager->RecalcPager();
+	}
+      }
+    }
+    break;
+
   case Q_SHOW_TASKBAR:
-    if (UseTaskbar)
+    if (UseTaskbar && !DisableDesktopChange)
       if (TaskbarAutoHide && taskBar->IsHiding())
 	taskBar->ShowTaskbar();
     break;
 
   case Q_HIDE_TASKBAR:
-    if (UseTaskbar)
+    if (UseTaskbar && !DisableDesktopChange)
       if (TaskbarAutoHide && !taskBar->IsHiding())
 	taskBar->HideTaskbar();
     break;
+
+  case Q_TOGGLE_PAGER:
+    if (UsePager && !DisableDesktopChange) {
+      if (enablePager)
+	execFunction(Q_DISABLE_PAGER);
+      else
+	execFunction(Q_ENABLE_PAGER);
+    }
+    break;
+        
+  case Q_ENABLE_PAGER:
+    if (UsePager && !DisableDesktopChange) {
+      if (!enablePager) {
+	enablePager = True;
+	pager->MapPager();
+      }
+    }
+    break;
+
+  case Q_DISABLE_PAGER:
+    if (UsePager && !DisableDesktopChange) {
+      if (enablePager) {
+	enablePager = False;
+	pager->UnmapPager();
+      }
+    }
+    break;
+
+  /*
+   * Line up desktop icons
+   */ 
+  case Q_LINEUP_ICON:
+    desktop.LineUpAllIcons();
+    break;
+
+  default:
+    return False;
   }
+
+  return True;
 }
 
 /*
- * IsSelectable --
- *   Return True if the menu item is selectable.
+ * Table for used variables
  */
-Bool Menu::IsSelectable(FuncNumber fn)
+static FuncTable funcTable[] =
+  {{"QVWM_NONE",			Q_NONE},
+   {"QVWM_SEPARATOR",			Q_SEPARATOR},
+   // qvwm
+   {"QVWM_EXIT",			Q_EXIT},
+   {"QVWM_RESTART",			Q_RESTART},
+   // window
+   {"QVWM_MOVE",			Q_MOVE},
+   {"QVWM_RESIZE",			Q_RESIZE},
+   {"QVWM_MINIMIZE",			Q_MINIMIZE},
+   {"QVWM_MAXIMIZE",			Q_MAXIMIZE},
+   {"QVWM_RESTORE",			Q_RESTORE},
+   {"QVWM_EXPAND",			Q_EXPAND},
+   {"QVWM_EXPAND_LEFT",			Q_EXPAND_LEFT},
+   {"QVWM_EXPAND_RIGHT",		Q_EXPAND_RIGHT},
+   {"QVWM_EXPAND_UP",			Q_EXPAND_UP},
+   {"QVWM_EXPAND_DOWN",			Q_EXPAND_DOWN},
+   {"QVWM_RAISE",			Q_RAISE},
+   {"QVWM_LOWER",			Q_LOWER},
+   {"QVWM_CLOSE",			Q_CLOSE},
+   {"QVWM_KILL",			Q_KILL},
+   {"QVWM_TOGGLE_ONTOP",		Q_TOGGLE_ONTOP},
+   {"QVWM_TOGGLE_STICKY",		Q_TOGGLE_STICKY},
+   // window focus
+   {"QVWM_SWITCH_TASK",			Q_SWITCH_TASK},
+   {"QVWM_SWITCH_TASK_BACK",		Q_SWITCH_TASK_BACK},
+   {"QVWM_CHANGE_WIN",			Q_CHANGE_WINDOW},
+   {"QVWM_CHANGE_WIN_BACK",		Q_CHANGE_WINDOW_BACK},
+   {"QVWM_CHANGE_WIN_INSCR",		Q_CHANGE_WINDOW_INSCR},
+   {"QVWM_CHANGE_WIN_BACK_INSCR",	Q_CHANGE_WINDOW_BACK_INSCR},
+   {"QVWM_DESKTOP_FOCUS",		Q_DESKTOP_FOCUS},
+   // window rearrangement
+   {"QVWM_OVERLAP",			Q_OVERLAP},
+   {"QVWM_OVERLAP_INSCR",		Q_OVERLAP_INSCR},
+   {"QVWM_TILE_HORZ",			Q_TILE_HORZ},
+   {"QVWM_TILE_HORZ_INSCR",		Q_TILE_HORZ_INSCR},
+   {"QVWM_TILE_VERT",			Q_TILE_VERT},
+   {"QVWM_TILE_VERT_INSCR",		Q_TILE_VERT_INSCR},
+   {"QVWM_MINIMIZE_ALL",		Q_MINIMIZE_ALL},
+   {"QVWM_MINIMIZE_ALL_INSCR",		Q_MINIMIZE_ALL_INSCR},
+   {"QVWM_RESTORE_ALL",			Q_RESTORE_ALL},
+   {"QVWM_RESTORE_ALL_INSCR",		Q_RESTORE_ALL_INSCR},
+   {"QVWM_CLOSE_ALL",			Q_CLOSE_ALL},
+   {"QVWM_CLOSE_ALL_INSCR",		Q_CLOSE_ALL_INSCR},
+   // menu
+   {"QVWM_POPUP_START_MENU",		Q_POPUP_START_MENU},
+   {"QVWM_POPUP_DESKTOP_MENU",		Q_POPUP_DESKTOP_MENU},
+   {"QVWM_POPUP_MENU",			Q_POPUP_MENU},
+   {"QVWM_POPDOWN_MENU",		Q_POPDOWN_MENU},
+   {"QVWM_POPDOWN_ALL_MENU",		Q_POPDOWN_ALL_MENU},
+   // paging
+   {"QVWM_LEFT_PAGING",			Q_LEFT_PAGING},
+   {"QVWM_RIGHT_PAGING",		Q_RIGHT_PAGING},
+   {"QVWM_UP_PAGING",			Q_UP_PAGING},
+   {"QVWM_DOWN_PAGING",			Q_DOWN_PAGING},
+   // taskbar
+   {"QVWM_BOTTOM",			Q_BOTTOM},
+   {"QVWM_TOP",				Q_TOP},
+   {"QVWM_LEFT",			Q_LEFT},
+   {"QVWM_RIGHT",			Q_RIGHT},
+   {"QVWM_TOGGLE_AUTOHIDE",		Q_TOGGLE_AUTOHIDE},
+   {"QVWM_ENABLE_AUTOHIDE",		Q_ENABLE_AUTOHIDE},
+   {"QVWM_DISABLE_AUTOHIDE",		Q_DISABLE_AUTOHIDE},
+   {"QVWM_TOGGLE_TASKBAR",              Q_TOGGLE_TASKBAR},
+   {"QVWM_ENABLE_TASKBAR",              Q_ENABLE_TASKBAR},
+   {"QVWM_DISABLE_TASKBAR",             Q_DISABLE_TASKBAR},
+   {"QVWM_SHOW_TASKBAR",		Q_SHOW_TASKBAR},
+   {"QVWM_HIDE_TASKBAR",		Q_HIDE_TASKBAR},
+   // pager
+   {"QVWM_TOGGLE_PAGER",                Q_TOGGLE_PAGER},
+   {"QVWM_ENABLE_PAGER",                Q_ENABLE_PAGER},
+   {"QVWM_DISABLE_PAGER",               Q_DISABLE_PAGER},
+   // icon
+   {"QVWM_LINEUP_ICON",			Q_LINEUP_ICON},
+   {"QVWM_EXEC_ICON",			Q_EXEC_ICON},
+   {"QVWM_DELETE_ICON",			Q_DELETE_ICON},
+   /* for backward compatibility */
+   {"QVWM_CHANGEWINDOW",		Q_CHANGE_WINDOW},
+   {"QVWM_SWITCHTASK",			Q_SWITCH_TASK},
+   {"QVWM_POPUPSTARTMENU",		Q_POPUP_START_MENU},
+   {"QVWM_POPUPMENU",			Q_POPUP_MENU},
+   {"QVWM_LEFTPAGING",			Q_LEFT_PAGING},
+   {"QVWM_RIGHTPAGING",			Q_RIGHT_PAGING},
+   {"QVWM_UPPAGING",			Q_UP_PAGING},
+   {"QVWM_DOWNPAGING",			Q_DOWN_PAGING},
+   {"QVWM_LINEUP",			Q_LINEUP_ICON},
+   {"QVWM_TILEHORZ",			Q_TILE_HORZ},
+   {"QVWM_TILEVERT",			Q_TILE_VERT},
+   {"QVWM_MINALL",			Q_MINIMIZE_ALL},
+   {"QVWM_EXECICON",			Q_EXEC_ICON},
+   {"QVWM_DELICON",			Q_DELETE_ICON},
+   {"QVWM_TOGGLEONTOP",			Q_TOGGLE_ONTOP},
+   {"QVWM_TOGGLESTICKY",		Q_TOGGLE_STICKY},
+   {"QVWM_TOGGLEAUTOHIDE",		Q_TOGGLE_AUTOHIDE}
+  };
+
+Hash<FuncNumber>* QvFunction::funcHashTable;
+const int FuncTableSize = sizeof(funcTable) / sizeof(FuncTable);
+
+void QvFunction::initialize()
 {
-  ASSERT(qvWm);
+  int i;
 
-  switch (fn) {
-  case Q_NONE:
-    return False;
+  funcHashTable = new Hash<FuncNumber>(HashTableSize);
 
-  case Q_RESTORE:
-    if (qvWm->CheckStatus(MINIMIZE_WINDOW | MAXIMIZE_WINDOW))
-      return True;
-    return False;
-
-  case Q_MOVE:
-  case Q_RESIZE:
-    if (qvWm->CheckStatus(MINIMIZE_WINDOW | MAXIMIZE_WINDOW))
-      return False;
-    return True;
-
-  case Q_MINIMIZE:
-    if (qvWm->CheckStatus(MINIMIZE_WINDOW) || qvWm->CheckFlags(NO_TBUTTON))
-      return False;
-    return True;
-
-  case Q_MAXIMIZE:
-    if (qvWm->CheckStatus(MAXIMIZE_WINDOW) &&
-	!qvWm->CheckStatus(MINIMIZE_WINDOW))
-      return False;
-    return True;
-
-  case Q_SEPARATOR:
-    return False;
-
-  case Q_BOTTOM:
-  case Q_TOP:
-  case Q_LEFT:
-  case Q_RIGHT:
-    if (UseTaskbar)
-      return True;
-    else
-      return False;
-
-  case Q_LEFT_PAGING:
-    {
-      Rect rcRoot = rootQvwm->GetRect();
-      Rect rcVirt = paging->GetVirtRect();
-      if (paging->origin.x > rcVirt.x * rcRoot.width)
-	return True;
-      else
-	return False;
-    }
-
-  case Q_RIGHT_PAGING:
-    {
-      Rect rcRoot = rootQvwm->GetRect();
-      Rect rcVirt = paging->GetVirtRect();
-      if (paging->origin.x < (rcVirt.x + rcVirt.width - 1) * rcRoot.width)
-	return True;
-      else
-	return False;
-    }
-
-  case Q_UP_PAGING:
-    {
-      Rect rcRoot = rootQvwm->GetRect();
-      Rect rcVirt = paging->GetVirtRect();
-      if (paging->origin.y > rcVirt.y * rcRoot.height)
-	return True;
-      else
-	return False;
-    }
-    
-  case Q_DOWN_PAGING:
-    {
-      Rect rcRoot = rootQvwm->GetRect();
-      Rect rcVirt = paging->GetVirtRect();
-      if (paging->origin.y < (rcVirt.y + rcVirt.height - 1) * rcRoot.height)
-	return True;
-      else
-	return False;
-    }
-
-  default:
-    return True;
-  }
+  for (i = 0; i < FuncTableSize; i++)
+    funcHashTable->SetHashItem(funcTable[i].name, &funcTable[i].num);
 }

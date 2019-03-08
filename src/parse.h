@@ -1,7 +1,7 @@
 /*
  * parse.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,18 +35,13 @@ enum VarAttribute {
   F_OFFSET,
   F_SIZE,
   F_GRADSTYLE,
-  F_MODMASK,
+  F_MODMASK
 };
 
 struct VariableTable {
   char* name;
   VarAttribute attr;
   void* var;
-};
-
-struct FuncTable {
-  char* name;
-  FuncNumber num;
 };
 
 struct AttrStream {

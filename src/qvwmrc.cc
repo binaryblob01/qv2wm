@@ -1,7 +1,7 @@
 /*
  * qvwmrc.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,6 +106,12 @@ int TaskbarHideDelay                = 500;
 Bool LockDragState                  = False;
 char* ScreenSaverProg               = "xlock";
 int ScreenSaverDelay                = 600;
+Bool TaskbarButtonInScr             = False;
+Bool EnableSound                    = True;
+Bool EnableAlsa                     = False;
+Bool EnableEsd                      = False;
+Bool AllowRemoteCmd                 = False;
+Bool DisableDesktopChange           = False;
 
 /*
  * Default message catalogs
@@ -146,13 +152,26 @@ char* StartMenuLogoImage            = NULL;
 /*
  * Sounds
  */
+char* SystemStartSound              = NULL;
+char* SystemExitSound               = NULL;
+char* SystemRestartSound            = NULL;
+char* MaximizeSound                 = NULL;
+char* MinimizeSound                 = NULL;
+char* RestoreUpSound                = NULL;
+char* RestoreDownSound              = NULL;
+char* ExpandSound                   = NULL;
+char* MenuPopupSound                = NULL;
+char* MenuCommandSound              = NULL;
+char* OpenSound                     = NULL;
+char* CloseSound                    = NULL;
+char* PagerSound                    = NULL;
+char* PagingSound                   = NULL;
+
+// backward compatibility
 char* OpeningSound                  = NULL;
 char* EndingSound                   = NULL;
 char* RestartSound                  = NULL;
-char* MaximizeSound                 = NULL;
-char* MinimizeSound                 = NULL;
 char* RestoreSound                  = NULL;
-char* ExpandSound                   = NULL;
 
 /*
  * Default icons
@@ -195,11 +214,11 @@ XColor ButtonStringColor;	// black
 XColor ButtonStringActiveColor;	// black
 XColor TaskbarColor;		// gray
 XColor ClockStringColor;	// black
-XColor DesktopColor;		// green
+XColor DesktopColor;		// royalBlue
 XColor DesktopActiveColor;	// blue
-XColor StartMenuLogoColor;	// blue
+XColor StartMenuLogoColor;	// black
 XColor CursorColor;		// white
-XColor TooltipColor;		// yellow
+XColor TooltipColor;		// lightYellow
 XColor TooltipStringColor;	// black
 
 /*
@@ -282,77 +301,6 @@ MenuElem* ShortCutItem = NULL;
 SCKeyTable* scKey = NULL;
 SCKeyTable* menuKey = NULL;
 
-/*
- * Table for used variables
- */
-FuncTable funcTable[] =
-  {{"QVWM_NONE",			Q_NONE},
-   {"QVWM_SEPARATOR",			Q_SEPARATOR},
-   {"QVWM_RESTORE",			Q_RESTORE},
-   {"QVWM_MOVE",			Q_MOVE},
-   {"QVWM_RESIZE",			Q_RESIZE},
-   {"QVWM_MINIMIZE",			Q_MINIMIZE},
-   {"QVWM_MAXIMIZE",			Q_MAXIMIZE},
-   {"QVWM_EXPAND",			Q_EXPAND},
-   {"QVWM_EXPAND_LEFT",			Q_EXPAND_LEFT},
-   {"QVWM_EXPAND_RIGHT",		Q_EXPAND_RIGHT},
-   {"QVWM_EXPAND_UP",			Q_EXPAND_UP},
-   {"QVWM_EXPAND_DOWN",			Q_EXPAND_DOWN},
-   {"QVWM_CLOSE",			Q_CLOSE},
-   {"QVWM_KILL",			Q_KILL},
-   {"QVWM_EXIT",			Q_EXIT},
-   {"QVWM_BOTTOM",			Q_BOTTOM},
-   {"QVWM_TOP",				Q_TOP},
-   {"QVWM_LEFT",			Q_LEFT},
-   {"QVWM_RIGHT",			Q_RIGHT},
-   {"QVWM_RESTART",			Q_RESTART},
-   {"QVWM_CHANGE_WIN",			Q_CHANGE_WINDOW},
-   {"QVWM_CHANGE_WIN_BACK",		Q_CHANGE_WINDOW_BACK},
-   {"QVWM_CHANGE_WIN_INSCR",		Q_CHANGE_WINDOW_INSCR},
-   {"QVWM_CHANGE_WIN_BACK_INSCR",	Q_CHANGE_WINDOW_BACK_INSCR},
-   {"QVWM_SWITCH_TASK",			Q_SWITCH_TASK},
-   {"QVWM_SWITCH_TASK_BACK",		Q_SWITCH_TASK_BACK},
-   {"QVWM_POPUP_START_MENU",		Q_POPUP_START_MENU},
-   {"QVWM_POPUP_DESKTOP_MENU",		Q_POPUP_DESKTOP_MENU},
-   {"QVWM_POPUP_MENU",			Q_POPUP_MENU},
-   {"QVWM_LEFT_PAGING",			Q_LEFT_PAGING},
-   {"QVWM_RIGHT_PAGING",		Q_RIGHT_PAGING},
-   {"QVWM_UP_PAGING",			Q_UP_PAGING},
-   {"QVWM_DOWN_PAGING",			Q_DOWN_PAGING},
-   {"QVWM_LINEUP_ICON",			Q_LINEUP_ICON},
-   {"QVWM_OVERLAP",			Q_OVERLAP},
-   {"QVWM_TILE_HORZ",			Q_TILE_HORZ},
-   {"QVWM_TILE_VERT",			Q_TILE_VERT},
-   {"QVWM_MINIMIZE_ALL",		Q_MINIMIZE_ALL},
-   {"QVWM_EXEC_ICON",			Q_EXEC_ICON},
-   {"QVWM_DELETE_ICON",			Q_DELETE_ICON},
-   {"QVWM_RAISE",			Q_RAISE},
-   {"QVWM_LOWER",			Q_LOWER},
-   {"QVWM_TOGGLE_ONTOP",		Q_TOGGLE_ONTOP},
-   {"QVWM_TOGGLE_STICKY",		Q_TOGGLE_STICKY},
-   {"QVWM_TOGGLE_AUTOHIDE",		Q_TOGGLE_AUTOHIDE},
-   {"QVWM_DESKTOP_FOCUS",		Q_DESKTOP_FOCUS},
-   {"QVWM_SHOW_TASKBAR",		Q_SHOW_TASKBAR},
-   {"QVWM_HIDE_TASKBAR",		Q_HIDE_TASKBAR},
-   /* for backward compatibility */
-   {"QVWM_CHANGEWINDOW",		Q_CHANGE_WINDOW},
-   {"QVWM_SWITCHTASK",			Q_SWITCH_TASK},
-   {"QVWM_POPUPSTARTMENU",		Q_POPUP_START_MENU},
-   {"QVWM_POPUPMENU",			Q_POPUP_MENU},
-   {"QVWM_LEFTPAGING",			Q_LEFT_PAGING},
-   {"QVWM_RIGHTPAGING",			Q_RIGHT_PAGING},
-   {"QVWM_UPPAGING",			Q_UP_PAGING},
-   {"QVWM_DOWNPAGING",			Q_DOWN_PAGING},
-   {"QVWM_LINEUP",			Q_LINEUP_ICON},
-   {"QVWM_TILEHORZ",			Q_TILE_HORZ},
-   {"QVWM_TILEVERT",			Q_TILE_VERT},
-   {"QVWM_MINALL",			Q_MINIMIZE_ALL},
-   {"QVWM_EXECICON",			Q_EXEC_ICON},
-   {"QVWM_DELICON",			Q_DELETE_ICON},
-   {"QVWM_TOGGLEONTOP",			Q_TOGGLE_ONTOP},
-   {"QVWM_TOGGLESTICKY",		Q_TOGGLE_STICKY},
-   {"QVWM_TOGGLEAUTOHIDE",		Q_TOGGLE_AUTOHIDE}};
-
 VariableTable varTable[] =
   {{"DoubleClickTime",		F_POSITIVE,	&DoubleClickTime},
    {"DoubleClickRange",		F_POSITIVE,	&DoubleClickRange},
@@ -428,6 +376,12 @@ VariableTable varTable[] =
    {"LockDragState",		F_BOOL,		&LockDragState},
    {"ScreenSaver",		F_STRING,	&ScreenSaverProg},
    {"ScreenSaverDelay",		F_NATURAL,	&ScreenSaverDelay},
+   {"TaskbarButtonInScr",	F_BOOL,		&TaskbarButtonInScr},
+   {"EnableSound",		F_BOOL,		&EnableSound},
+   {"EnableAlsa",		F_BOOL,		&EnableAlsa},
+   {"EnableEsd",		F_BOOL,		&EnableEsd},
+   {"AllowRemoteCmd",		F_BOOL,		&AllowRemoteCmd},
+   {"DisableDesktopChange",	F_BOOL,		&DisableDesktopChange},
    {"StartButtonTitle",		F_STRING,	&StartButtonTitle},
    {"StartButtonMessage",	F_STRING,	&StartButtonMessage},
    {"MinimizeButtonMessage",	F_STRING,	&MinimizeButtonMessage},
@@ -447,13 +401,20 @@ VariableTable varTable[] =
    {"DialogImage",		F_STRING,	&DialogImage},
    {"SwitcherImage",		F_STRING,	&SwitcherImage},
    {"StartMenuLogoImage",	F_STRING,	&StartMenuLogoImage},
-   {"OpeningSound",		F_STRING,	&OpeningSound},
-   {"EndingSound",		F_STRING,	&EndingSound},
-   {"RestartSound",		F_STRING,	&RestartSound},
+   {"SystemStartSound",		F_STRING,	&SystemStartSound},
+   {"SystemExitSound",		F_STRING,	&SystemExitSound},
+   {"SystemRestartSound",	F_STRING,	&SystemRestartSound},
    {"MaximizeSound",		F_STRING,	&MaximizeSound},
    {"MinimizeSound",		F_STRING,	&MinimizeSound},
-   {"RestoreSound",		F_STRING,	&RestoreSound},
+   {"RestoreUpSound",		F_STRING,	&RestoreUpSound},
+   {"RestoreDownSound",		F_STRING,	&RestoreDownSound},
    {"ExpandSound",		F_STRING,	&ExpandSound},
+   {"MenuPopupSound",		F_STRING,	&MenuPopupSound},
+   {"MenuCommandSound",		F_STRING,	&MenuCommandSound},
+   {"OpenSound",		F_STRING,	&OpenSound},
+   {"CloseSound",		F_STRING,	&CloseSound},
+   {"PagerSound",		F_STRING,	&PagerSound},
+   {"PagingSound",		F_STRING,	&PagingSound},
    {"DefaultIcon",		F_STRING,	&DefaultIcon},
    {"DefaultLargeIcon",		F_STRING,	&DefaultLargeIcon},
    {"DefaultShortcutIcon",	F_STRING,	&DefaultShortcutIcon},
@@ -505,7 +466,11 @@ VariableTable varTable[] =
    {"DialogFont",		F_STRING,	&DialogFont},
    /* for backward compatibility */
    {"PixmapPath",		F_STRING,	&ImagePath},
-   {"IconPath",			F_STRING,	&ImagePath}};
+   {"IconPath",			F_STRING,	&ImagePath},
+   {"OpeningSound",		F_STRING,	&OpeningSound},
+   {"EndingSound",		F_STRING,	&EndingSound},
+   {"RestoreSound",		F_STRING,	&RestoreSound},
+   {"RestartSound",		F_STRING,	&RestartSound}};
 
 /*
  * Table for fontset variable and font name.
@@ -538,6 +503,7 @@ AttrNameSet attrSet[] =
    {"INIT_MAXIMIZE",	INIT_MAXIMIZE,		True},
    {"INIT_MINIMIZE",	INIT_MINIMIZE,		True},
    {"FOCUS_ON_CLICK",	FOCUS_ON_CLICK,		True},
+   {"GEOMETRY",		GEOMETRY,		True},
    /* for backward compatibility */
    {"SMALL_PIX",	SMALL_IMG,		True},
    {"LARGE_PIX",	LARGE_IMG,		True},
@@ -565,7 +531,6 @@ KeyMod keyMod[] =
    {"Mod5",  Mod5Mask},
    {"None",  0}};
 
-const int FuncTableSize = sizeof(funcTable) / sizeof(FuncTable);
 const int VarTableSize = sizeof(varTable) / sizeof(VariableTable);
 const int FsNum = sizeof(fsSet) / sizeof(FsNameSet);
 const int AttrNum = sizeof(attrSet) / sizeof(AttrNameSet);

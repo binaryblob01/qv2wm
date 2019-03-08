@@ -4,20 +4,20 @@ typedef union {
   AttrStream* aStream;
   unsigned int modifier;
 } YYSTYPE;
-#define	VARIABLE	258
-#define	MENU	259
-#define	SHORTCUT	260
-#define	APP	261
-#define	KEY	262
-#define	IND	263
-#define	EXITDLG	264
-#define	STARTUP	265
-#define	ACC	266
-#define	VAR	267
-#define	STRING	268
-#define	FUNC	269
-#define	PLUS	270
-#define	MINUS	271
+#define	VARIABLE	257
+#define	MENU	258
+#define	SHORTCUT	259
+#define	APP	260
+#define	KEY	261
+#define	IND	262
+#define	EXITDLG	263
+#define	STARTUP	264
+#define	ACC	265
+#define	VAR	266
+#define	STRING	267
+#define	FUNC	268
+#define	PLUS	269
+#define	MINUS	270
 
 
 extern YYSTYPE yylval;

@@ -1,7 +1,7 @@
 /*
  * audio_au.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,11 @@
 #endif
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "audio_au.h"
+#include "message.h"
 
 int AudioAu::Play(char* file)
 {
@@ -35,40 +37,67 @@ int AudioAu::Play(char* file)
   int len, ret;
   int encoding, bits;
 
-  if (stat(file, &sb) < 0)
-    return -errno;
+  if (stat(file, &sb) < 0) {
+    if (errno == ENOENT)
+      return AUDIO_NOFILE;
+    else {
+      QvwmError("au file check error: %s", strerror(errno));
+      return AUDIO_ERROR;
+    }
+  }
 
-  if ((fp = fopen(file, "r")) == NULL)
-    return -errno;
+  if ((fp = fopen(file, "r")) == NULL) {
+    QvwmError("au file open error: %s", strerror(errno));
+    return AUDIO_ERROR;
+  }
 
   if (fread(hdr.m_magic, 4, 1, fp) < 1) {
+    QvwmError("au file read error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
   if (memcmp(hdr.m_magic, ".snd", 4) != 0) {
+    QvwmError("au format magic string is not '.snd'");
     fclose(fp);
-    return AUDIO_BADFMT;
+    return AUDIO_ERROR;
   }
 
-  hdr.m_hdrsize = getBWord(fp);
-  hdr.m_datasize = getBWord(fp);
-  hdr.m_encoding = getBWord(fp);
-  hdr.m_rate = getBWord(fp);
-  hdr.m_channels = getBWord(fp);
+  if (getBWord(fp, &hdr.m_hdrsize) < 0) {
+    QvwmError("au file read error: %s", strerror(errno));
+    fclose(fp);
+    return AUDIO_ERROR;
+  }
+  if (getBWord(fp, &hdr.m_datasize) < 0) {
+    QvwmError("au file read error: %s", strerror(errno));
+    fclose(fp);
+    return AUDIO_ERROR;
+  }
+  if (getBWord(fp, &hdr.m_encoding) < 0) {
+    QvwmError("au file read error: %s", strerror(errno));
+    fclose(fp);
+    return AUDIO_ERROR;
+  }
+  if (getBWord(fp, &hdr.m_rate) < 0) {
+    QvwmError("au file read error: %s", strerror(errno));
+    fclose(fp);
+    return AUDIO_ERROR;
+  }
+  if (getBWord(fp, &hdr.m_channels) < 0) {
+    QvwmError("au file read error: %s", strerror(errno));
+    fclose(fp);
+    return AUDIO_ERROR;
+  }
 
   if (fseek(fp, hdr.m_hdrsize - 24, SEEK_CUR) < 0) {
+    QvwmError("au file seek error: %s", strerror(errno));
     fclose(fp);
-    return AUDIO_BROKEN;
+    return AUDIO_ERROR;
   }
 
   // open an audio device
   if (openDevice() < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("openDevice");
-#endif
     fclose(fp);
-    return ret;
+    return AUDIO_ERROR;
   }
 
   switch (hdr.m_encoding) {
@@ -83,62 +112,51 @@ int AudioAu::Play(char* file)
     break;
 
   case AUDIO_FILE_ENCODING_LINEAR_8:
-    encoding = EN_LINEAR;
+    encoding = EN_ULINEAR;
     bits = 8;
     break;
 
   case AUDIO_FILE_ENCODING_LINEAR_16:
-    encoding = EN_LINEAR;
+    encoding = EN_ULINEAR;
     bits = 16;
     break;
 
   case AUDIO_FILE_ENCODING_LINEAR_24:
-    encoding = EN_LINEAR;
+    encoding = EN_ULINEAR;
     bits = 24;
     break;
 
   case AUDIO_FILE_ENCODING_LINEAR_32:
-    encoding = EN_LINEAR;
+    encoding = EN_ULINEAR;
     bits = 32;
     break;
 
   default:
+    QvwmError("au file encoding is not supported");
     fclose(fp);
     closeDevice();
-    return AUDIO_UNSUPP;
+    return AUDIO_ERROR;
   }
 
   // set sampling bits per sample
   if (setFormat(bits, encoding) < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("setFormat");
-#endif
     fclose(fp);
     closeDevice();
-    return ret;
+    return AUDIO_ERROR;
   }
 
   // set the number of channels
   if (setChannels(hdr.m_channels) < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("setChannels");
-#endif
     fclose(fp);
     closeDevice();
-    return ret;
+    return AUDIO_ERROR;
   }
 
   // set a sampling rate
   if (setSamplingRate(hdr.m_rate) < 0) {
-    ret = -errno;
-#ifdef DEBUG
-    perror("setSamplingRate");
-#endif
     fclose(fp);
     closeDevice();
-    return ret;
+    return AUDIO_ERROR;
   }
   
   len = sb.st_size - hdr.m_hdrsize;

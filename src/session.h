@@ -1,7 +1,7 @@
 /*
  * session.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,11 @@ public:
     flags = 0;
   }
   ~QvwmProto() {
-    delete id, role, res_class, res_name, name;
+    delete id;
+    delete role;
+    delete res_class;
+    delete res_name;
+    delete name;
   }
   void SetId(char* aid) { id = strdup(aid); }
   void SetRole(char* arole) { role = strdup(arole); }

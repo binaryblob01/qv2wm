@@ -1,7 +1,7 @@
 /*
  * sbutton.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,14 +28,14 @@
  */
 class StartButton : public TaskbarButton {
 public:
-  unsigned int buttonWidth;
+  int buttonWidth;
 
 private:
   void FillBackground();
   void DrawName();
 
 public:
-  StartButton(Qvwm* qvWm, unsigned int some_width);
+  StartButton(Qvwm* qvWm, int some_width);
   ~StartButton() {}
   
   void DrawButton();

@@ -1,7 +1,7 @@
 /*
  * fbutton.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ void FrameButton3::ExecButtonFunc(ButtonState bs)
   ASSERT(qvWm);
 
   if (bs == PUSH)
-    qvWm->ExecFunction(Q_CLOSE);
+    QvFunction::execFunction(Q_CLOSE, qvWm);
 }
 
 void FrameButton::Initialize()

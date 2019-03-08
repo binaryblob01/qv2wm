@@ -12,7 +12,7 @@
 .if t .sp .5
 ..
 
-.TH QVWM 1 "19 Feb 2000" "Version 1.1.6"
+.TH QVWM 1 "1 June 2001" "Version 1.1.11"
 
 .SH 名前
 qvwm \- X11用のWindows 95/98風ウィンドウマネージャ
@@ -35,7 +35,7 @@ qvwmはX11用のWindows 95/98風ウィンドウマネージャです。基本的にはtwmやfvwmと
 .TP
 \fB--clientid\fP \fIclient_id\fP
 以前のセッションからのクライアントIDを指定します。
-\fB-id\fPや\fB-clientID\fPと同等です。
+\fB-id\fPや\fB-clientId\fPと同等です。
 .TP
 \fB--config\fP
 qvwmがコンパイルされた時のコンパイルオプションを表示します。
@@ -74,6 +74,10 @@ qvwmを同期モードで実行します。このオプションをつけると動作が遅くなります
 .SH 変数設定
 設定ファイルで指定できる変数です。括弧内はデフォルト値で指定しなかった
 場合に使われます。
+.TP
+\fBAllowRemoteCmd\fP (False)
+qvwmを起動したユーザの他のプロセスから内部コマンドを送ることを許すかど
+うかを指定します。
 .TP
 \fBAutoRaise\fP (False)
 アクティブなウィンドウが自動的に手前にくるかどうかを指定します。
@@ -118,6 +122,9 @@ strftime(3)に凖じます。
 .TP
 \fBCloseButtonMessage\fP ("Close")
 閉じるボタンのツールチップのメッセージを指定します。
+.TP
+\fBCloseSound\fP (NULL)
+ウィンドウを閉じる時にならすサウンドファイルを指定します。
 .TP
 \fBCtrlMenuFont\fP (null)
 コントロールメニューのフォントを指定します。この変数が指定されなければ、
@@ -168,6 +175,10 @@ DefaultFontが使われます。
 \fBDialogStringColor\fP (qvgray)
 終了ダイアログの文字の色を指定します。
 .TP
+\fBDisableDesktopChange\fP (False)
+ユーザがタスクバー、ページャ、アイコンを動かせないようにするかどうかを
+指定します。
+.TP
 \fBDoubleClickRange\fP (5)
 ダブルクリックとみなされる最大距離を指定します。(1以上)
 .TP
@@ -177,8 +188,15 @@ DefaultFontが使われます。
 \fBEdgeResistance\fP (0)
 ウィンドウの枠が画面の端を越えて動くための抵抗を指定します。
 .TP
-\fBEndingSound\fP (NULL)
-qvwmが終了する時にならすサウンドファイルを指定します。
+\fBEnableAlsa\fP (True)
+OSがサポートしている時、ALSA(Advanced Linux Sound Architecture)を有効
+にするかどうかを指定します。
+.TP
+\fBEnableEsd\fP (True)
+EsounDを有効にするかどうかを指定します。
+.TP
+\fBEnableSound\fP (True)
+サウンド機能を有効にするかどうかを指定します。
 .TP
 \fBExpandSound\fP (NULL)
 QVWM_EXPAND_??によってウィンドウを拡げる時にならすサウンドファイルを指定
@@ -290,6 +308,9 @@ LANGを使いますが、それとは違うものが使いたければ指定して下さい。
 \fBMenuColor\fP (qvgray)
 メニューの色を指定します。
 .TP
+\fBMenuCommandSound\fP (NULL)
+メニュー項目がクリックされた時にならすサウンドファイルを指定します。
+.TP
 \fBMenuImage\fP ("")
 メニューの背景の画像を指定します。
 .TP
@@ -347,8 +368,8 @@ Shift, Ctrl, Alt, Meta, Mod1〜Mod5またはNoneが指定できます。
 ウィンドウ等をサイズ変更する時に、フルドラッグ(枠だけでなくウィンドウ全体を
 動かす)するかどうかを指定します。
 .TP
-\fBOpeningSound\fP (NULL)
-qvwmを立ち上げる時にならすサウンドファイルを指定します。
+\fBOpenSound\fP (NULL)
+アプリケーションを起動する時にならすサウンドファイルを指定します。
 .TP
 \fBPagerActiveColor\fP (qvdarkgray)
 ページャの中のアクティブなページの色を指定します。
@@ -365,6 +386,10 @@ qvwmを立ち上げる時にならすサウンドファイルを指定します。
 .TP
 \fBPagerImage\fP ("")
 ページャの背景の画像を指定します。
+.TP
+\fBPagerSound\fP (NULL)
+ページャをクリックして仮想ページを切り替えた時にならすサウンドファイル
+を指定します。
 .TP
 \fBPagingBeltSize\fP (2)
 画面の端の仮想画面の切り換えが起こる領域の幅を指定します。0なら画面の端にマ
@@ -384,6 +409,10 @@ qvwmを立ち上げる時にならすサウンドファイルを指定します。
 .EE
 で指定します。ページ単位で指定して下さい。
 .TP
+\fBPagingSound\fP (NULL)
+マウスを動かすかショートカットキーによって仮想画面を切り替えた時になら
+すサウンドファイルを指定します。
+.TP
 \fBPagingSpeed\fP (1)
 ページングの時にどの程度滑らかに移動するかを指定します。この数値が大きい程
 滑らかに移動します。
@@ -394,19 +423,21 @@ qvwmを立ち上げる時にならすサウンドファイルを指定します。
 \fBRestoreButtonMessage\fP ("Restore")
 元のサイズに戻すボタンのツールチップのメッセージを指定します。
 .TP
+\fBRestoreDownSound\fP (NULL)
+ウィンドウを最大化された状態から元のサイズに戻す時にならすサウンドファ
+イルを指定します。
+.TP
 \fBRestoreMinimize\fP (False)
 ウィンドウがアクティブの時、対応するタスクバー・ボタンを押した時に
 ウィンドウが最小化されるかどうかを指定します。
 .TP
-\fBRestoreSound\fP (NULL)
-ウィンドウを元のサイズに戻す時にならすサウンドファイルを指定します。
+\fBRestoreUpSound\fP (NULL)
+ウィンドウを最小化された状態から元のサイズに戻す時にならすサウンドファ
+イルを指定します。
 .TP
 \fBRestartOnFailure\fP (True)
 セグメンテーション違反またはバスエラーが出た時にqvwmを自動的に再起動する
 かどうかを指定します。
-.TP
-\fBRestartSound\fP (NULL)
-qvwmを再起動する時にならすサウンドファイルを指定します。
 .TP
 \fBScreenSaver\fP ("xlock")
 スクリーンセーバーを指定します。
@@ -461,12 +492,25 @@ DefaultFontが使われます。
 \fBSwitcherImage\fP ("")
 タスクスイッチャの背景の画像を指定します。
 .TP
+\fBSystemExitSound\fP (NULL)
+qvwmが終了する時にならすサウンドファイルを指定します。
+.TP
+\fBSystemRestartSound\fP (NULL)
+qvwmを再起動する時にならすサウンドファイルを指定します。
+.TP
+\fBSystemStartSound\fP (NULL)
+qvwmを立ち上げる時にならすサウンドファイルを指定します。
+.TP
 \fBTaskbarAutoHide\fP (False)
 タスクバーを自動的に隠すかどうかを指定します。
 .TP
 \fBTaskbarButtonHeight\fP (22)
 タスクバーボタンの高さを指定します。この値はタスクバーの高さ、スタート
 ボタンの高さ、タスクバーボックスの高さにも影響を与えます。
+.TP
+\fBTaskbarButtonInScr\fP (False)
+タスクバーが画面内にあるウィンドウのタスクバーボタンだけを表示するよう
+にするかどうかを指定します。
 .TP
 \fBTaskbarBoldFont\fP (null)
 タスクバーのボールドフォントを指定します。この変数が指定されなければ、
@@ -589,6 +633,128 @@ qvwmの異常終了した時にデバッガ(gdb)を起動してスタックトレースを表示するか
 TopLeft, TopRight, BottomLeft, BottomRight, Top, Bottom, Left, Right
 の中から選んで下さい。
 
+.SH 内部コマンド
+qvwmのメニューやショートカット等で使用できる内部コマンドには以下のもの
+があります。[menu]、[win]、[icon]、[shortcut]はそれぞれメニュー、ウィ
+ンドウのコントロールメニュー、アイコンのメニュー、ショートカット・キー
+からのみ利用可能であることを示します。
+
+ウィンドウマネージャ
+.EX
+QVWM_EXIT                  qvwmを終了する
+QVWM_RESTART               qvwmを再起動する
+.EE
+ウィンドウ
+.EX
+QVWM_MOVE                  ウィンドウを移動する[win]
+QVWM_RESIZE                ウィンドウのサイズを変更する[win]
+QVWM_MAXIMIZE              ウィンドウを最大化する[win]
+QVWM_MINIMIZE              ウィンドウを最小化する[win]
+QVWM_RESTORE               ウィンドウのサイズを元に戻す[win]
+QVWM_EXPAND                ウィンドウを全方向に広げる[win]
+QVWM_EXPAND_LEFT           ウィンドウを左方向に広げる[win]
+QVWM_EXPAND_RIGHT          ウィンドウを右方向に広げる[win]
+QVWM_EXPAND_UP             ウィンドウを上方向に広げる[win]
+QVWM_EXPAND_DOWN           ウィンドウを下方向に広げる[win]
+QVWM_RAISE                 ウィンドウを一番上に移動する[win]
+QVWM_LOWER                 ウィンドウを一番下に移動する[win]
+QVWM_CLOSE                 ウィンドウを閉じる[win]
+QVWM_KILL                  ウィンドウを強制的に閉じる[win]
+QVWM_TOGGLE_ONTOP          ONTOP属性のトグル切り換え[win]
+QVWM_TOGGLE_STICKY         STICKY属性のトグル切り換え[win]
+.EE
+ウィンドウ・フォーカス
+.EX
+QVWM_SWITCH_TASK           スイッチャでウィンドウを切換[shortcut]
+QVWM_SWITCH_TASK_BACK      スイッチャでウィンドウを切換(逆順)[shotcut]
+QVWM_CHANGE_WIN            アクティブウィンドウを変更
+QVWM_CHANGE_WIN_BACK       アクティブウィンドウを変更(逆順)
+QVWM_CHANGE_WIN_INSCR      画面内のアクティブウィンドウを変更
+QVWM_CHANGE_WIN_BACK_INSCR 画面内のアクティブウィンドウを変更(逆順)
+QVWM_DESKTOP_FOCUS         デスクトップをアクティブにする
+.EE
+ウィンドウ整列
+.EX
+QVWM_OVERLAP               ウィンドウを重ねて配置
+QVWM_OVERLAP_INSCR         ウィンドウを重ねて配置
+QVWM_TILE_HORZ             全てのウィンドウを左右にタイリング
+QVWM_TILE_HORZ_INSCR       画面内のウィンドウを左右にタイリング
+QVWM_TILE_VERT             全てのウィンドウを上下にタイリング
+QVWM_TILE_VERT_INSCR       画面内のウィンドウを上下にタイリング
+QVWM_MINIMIZE_ALL          全てのウィンドウを最小化する
+QVWM_MINIMIZE_ALL_INSCR    画面内のウィンドウを最小化する
+QVWM_RESTORE_ALL           全てのウィンドウを元に戻す
+QVWM_RESTORE_ALL_INSCR     画面内のウィンドウを元に戻す
+QVWM_CLOSE_ALL             全てのウィンドウを閉じる
+QVWM_CLOSE_ALL_INSCR       画面内のウィンドウを閉じる
+.EE
+メニュー
+.EX
+QVWM_POPUP_START_MENU      スタートメニューを出す
+QVWM_POPUP_DESKTOP_MENU    デスクトップメニューを出す
+QVWM_POPUP_MENU            アクティブウィンドウのメニューを出す
+QVWM_POPDOWN_MENU          メニューを消す[menu]
+QVWM_POPDOWN_ALL_MENU      全てのメニューを消す
+.EE
+仮想画面
+.EX
+QVWM_UP_PAGING             上の仮想ページに切り替える
+QVWM_DOWN_PAGING           下の仮想ページに切り替える
+QVWM_LEFT_PAGING           左の仮想ページに切り替える
+QVWM_RIGHT_PAGING          右の仮想ページに切り替える
+.EE
+タスクバー
+.EX
+QVWM_BOTTOM                タスクバーを下に移動
+QVWM_TOP                   タスクバーを上に移動
+QVWM_LEFT                  タスクバーを左に移動
+QVWM_RIGHT                 タスクバーを右に移動
+QVWM_TOGGLE_AUTOHIDE       TaskbarAutoHideのトグル切り換え
+QVWM_ENABLE_AUTOHIDE       TaskbarAutoHideを有効にする
+QVWM_DISABLE_AUTOHIDE      TaskbarAutoHideを無効にする
+QVWM_TOGGLE_TASKBAR        タスクバー表示のトグル切り換え
+QVWM_ENABLE_TASKBAR        タスクバーを表示する
+QVWM_DISABLE_TASKBAR       タスクバーを非表示にする
+QVWM_SHOW_TASKBAR          TaskbarAutoHide時にタスクバーを出す
+QVWM_HIDE_TASKBAR          TaskbarAutoHide時にタスクバーを隠す
+.EE
+ページャ
+.EX
+QVWM_TOGGLE_PAGER          ページャ表示のトグル切り換え
+QVWM_ENABLE_PAGER          ページャを表示する
+QVWM_DISABLE_PAGER         ページャを非表示にする
+.EE
+アイコン
+.EX
+QVWM_LINEUP_ICON           ショートカットを整列させる
+QVWM_EXEC_ICON             アイコンを実行する[icon]
+QVWM_DELETE_ICON           アイコンを除去する[icon]
+.EE
+その他
+.EX
+QVWM_NONE                  何もしない
+QVWM_SEPARATOR             セパレータ(動作なし)[menu]
+.EE
+
+
+.SH 外部コマンド
+外部コマンドの前にはいくつかの修飾子の中の一つを指定できます。
+.IP EXEC 8
+qvwmをその外部コマンドで置き換える。他のウィンドウマネージャに切り替える時
+に使います。
+.EX
+例  "EXEC twm"
+.EE
+.IP PAGE[<x>,<y>,<識別子>]
+外部コマンドで作られるウィンドウを(x, y)ページに配置します。識別子にはウィ
+ンドウのタイトル名またはリソース名またはリソースクラスを指定して下さい。
+.EX
+例  "PAGE[1, 1, XEyes] xeyes"
+.EE
+.IP PAGECUR[<識別子>]
+外部コマンドで作られるウィンドウをコマンドが実行されたページに配置します。
+
+
 .SH スタートアップ
 qvwmの起動時に実行する外部コマンドは以下のように指定します。
 .EX
@@ -618,58 +784,9 @@ qvwmの起動時に実行する外部コマンドは以下のように指定します。
 されます。
 \fI画像名\fPはメニューの項目名の左に表示される画像の名前を""で囲って指
 定します。第１形式の\fI選択時動作\fPにはその項目を選んだ時に実行される
-プログラム名またはqvwm内部関数名を指定します。
-プログラム名を指定する場合には""で囲んで下さい。qvwm内部関数には次の
-ものが指定できます：
-.EX
-QVWM_MAXIMIZE              ウィンドウを最大化する
-QVWM_MINIMIZE              ウィンドウを最小化する
-QVWM_RESTORE               ウィンドウのサイズを元に戻す
-QVWM_MOVE                  ウィンドウを移動する
-QVWM_RESIZE                ウィンドウのサイズを変更する
-QVWM_RAISE                 ウィンドウを一番上に移動する
-QVWM_LOWER                 ウィンドウを一番下に移動する
-QVWM_EXPAND                ウィンドウを全方向に広げる
-QVWM_EXPAND_LEFT           ウィンドウを左方向に広げる
-QVWM_EXPAND_RIGHT          ウィンドウを右方向に広げる
-QVWM_EXPAND_UP             ウィンドウを上方向に広げる
-QVWM_EXPAND_DOWN           ウィンドウを下方向に広げる
-QVWM_CLOSE                 ウィンドウを閉じる
-QVWM_KILL                  ウィンドウを強制的に閉じる
-QVWM_EXIT                  qvwmを終了する
-QVWM_RESTART               qvwmを再起動する
-QVWM_LINEUP_ICON           ショートカットを整列させる
-QVWM_SWITCH_TASK           ウィンドウを切り換える
-QVWM_SWITCH_TASK_BACK      ウィンドウを切り換える(逆順)
-QVWM_CHANGE_WIN            アクティブウィンドウを変更
-QVWM_CHANGE_WIN_BACK       アクティブウィンドウを変更(逆順)
-QVWM_CHANGE_WIN_INSCR      画面内のアクティブウィンドウを変更
-QVWM_CHANGE_WIN_BACK_INSCR 画面内のアクティブウィンドウを変更(逆順)
-QVWM_DESKTOP_FOCUS         デスクトップをアクティブにする
-QVWM_POPUP_START_MENU      スタートメニューを出す
-QVWM_POPUP_DESKTOP_MENU    デスクトップメニューを出す
-QVWM_POPUP_MENU            ウィンドウのコントロールメニューを出す
-QVWM_POPDOWN_MENU          ウィンドウのコントロールメニューを消す
-QVWM_POPDOWN_ALL_MENU      全てのメニューを消す
-QVWM_BOTTOM                タスクバーを下に移動
-QVWM_LEFT                  タスクバーを左に移動
-QVWM_RIGHT                 タスクバーを右に移動
-QVWM_TOP                   タスクバーを上に移動
-QVWM_DOWN_PAGING           下の仮想ページに切り替える
-QVWM_LEFT_PAGING           左の仮想ページに切り替える
-QVWM_RIGHT_PAGING          右の仮想ページに切り替える
-QVWM_UP_PAGING             上の仮想ページに切り替える
-QVWM_OVERLAP               ウィンドウを重ねて配置する
-QVWM_TILE_HORZ             画面内のウィンドウを左右に並べて配置する
-QVWM_TILE_VERT             画面内のウィンドウを上下に並べて配置する
-QVWM_MINIMIZE_ALL          画面内の全てのウィンドウを最小化する
-QVWM_TOGGLE_ONTOP          ONTOP属性のトグル切り換え
-QVWM_TOGGLE_AUTOHIDE       TaskbarAutoHideのトグル切り換え
-QVWM_TOGGLE_STICKY         STICKY属性のトグル切り換え
-QVWM_SEPARATOR             セパレータ(動作なし)
-QVWM_NONE                  何もしない
-
-.EE
+プログラム名または内部コマンドを指定します。
+プログラム名を指定する場合には""で囲んで下さい。
+.PP
 第２形式はその項目から子メニューを出したい時に使います。+と-で囲まれた
 部分が子メニューになります。
 .PP
@@ -702,11 +819,12 @@ QVWM_NONE                  何もしない
 ンに使われる画像名を""で囲って指定します。コンパイル時に指定
 したIMGDIRディレクトリの下または、.qvwmrcのImagePathディレクトリの下に置
 いておいて下さい。\fI機能\fPはショートカット・アイコンをダブルクリック
-した時に実行されるqvwm内部関数または外部コマンドを指定します。\fIx座標\fP
+した時に実行される内部コマンドまたは外部コマンドを指定します。\fIx座標\fP
 または\fIy座標\fPが指定されていれば、その位置にショートカットを配置します。
 x座標、y座標を絶対座標で指定する代わりに'!'で始めるとアイコン領域の倍数の
 位置に配置します。指定しなかった場合、記述されている順番に従って配置され
 ます。
+
 
 .SH 属性設定
 アプリケーションごとの属性は以下の形式で設定できます。
@@ -750,6 +868,9 @@ x座標、y座標を絶対座標で指定する代わりに'!'で始めるとアイコン領域の倍数の
 ウィンドウが初めて表示される時に最大化します。
 .IP INIT_MINIMIZE
 ウィンドウが初めて表示される時に最小化します。
+.IP GEOMETRY
+ウィンドウの位置、サイズを指定します。(例: GEOMETRY=100x100+0-0)
+
 
 .SH 終了ダイアログ設定
 終了ダイアログは以下の形式で設定できます。
@@ -767,9 +888,10 @@ RadioButton       ラジオボタン
 StaticText        説明のための文字列
 Title             タイトルバーの文字列
 .EE
-ラジオボタンの場合だけ機能が意味をもちます。ここには上で述べたqvwm内部
-関数または外部コマンドを指定して下さい。OKButton、CancelButton、HelpButton
+ラジオボタンの場合だけ機能が意味をもちます。ここには上で述べた内部コマ
+ンドまたは外部コマンドを指定して下さい。OKButton、CancelButton、HelpButton
 で指定する文字列の中でショートカットキーを指定する\\&を使うことができます。
+
 
 .SH ショートカット・キー設定
 ショートカット・キーは以下の形式で設定できます。
@@ -791,7 +913,8 @@ Meta        メタキー
 Mod1〜Mod5  使用せず(obsolete)
 None        修飾キーなし
 .EE
-\fI機能\fPはqvwm内部関数または外部コマンドを指定して下さい。
+\fI機能\fPは内部コマンドまたは外部コマンドを指定して下さい。
+
 
 .SH インジケータ設定
 タスクバーの時計の左にインジケータと呼ばれる16x16のウィンドウを出すことが
@@ -804,6 +927,7 @@ None        修飾キーなし
 リソースクラスを指定して下さい。\fIプログラム名\fPで指定されたプログラムの
 作るウィンドウがインジケータになります。(ただし２つ以上のウィンドウを作る
 場合、２つ目以降は普通のウィンドウとして表示されます)
+
 
 .SH アクセサリ設定
 アニメーションファイルを含む画像をアクセサリとしてデスクトップに置くこ
@@ -821,12 +945,14 @@ Backgroundを指定すれば、その画像はどのウィンドウ、ショートカットアイコ
 ショートカットアイコンよりも上に置かれます。Applicationを指定すれば、
 その画像には枠がつき、動かすことができます。
 
+
 .SH include文
 設定ファイルの中でinclude文を使うことによって、外部から設定ファイルを読み
 込むことができます。
 .EX
 例  include /home/kourai/.qvwmrc.local
 .EE
+
 
 .SH パス名
 include文とPixmapPath変数の設定では、パスの最初の部分に自分のホームディレ
@@ -837,22 +963,6 @@ include文とPixmapPath変数の設定では、パスの最初の部分に自分のホームディレ
     PixmapPath = ~/lib/qvwm/pixmaps
 .EE
 
-.SH 外部コマンド
-外部コマンドの前にはいくつかの修飾子の中の一つを指定できます。
-.IP EXEC 8
-qvwmをその外部コマンドで置き換える。他のウィンドウマネージャに切り替える時
-に使います。
-.EX
-例  "EXEC twm"
-.EE
-.IP PAGE[<x>,<y>,<識別子>]
-外部コマンドで作られるウィンドウを(x, y)ページに配置します。識別子にはウィ
-ンドウのタイトル名またはリソース名またはリソースクラスを指定して下さい。
-.EX
-例  "PAGE[1, 1, XEyes] xeyes"
-.EE
-.IP PAGECUR[<識別子>]
-外部コマンドで作られるウィンドウをコマンドが実行されたページに配置します。
 
 .SH サポートしている画像形式
 qvwmはxpm形式(拡張子.xpm)の画像をサポートしています。コンパイル時に
@@ -863,6 +973,21 @@ Imlibを使うようにしていれば、Imlibがサポートしている形式の画像(jpeg等)
 よってサポートされていれば、そのアニメーションファイルもサポートされま
 す。
 
+
+.SH リモートコマンド
+/tmp/qvwm-\fIdisplay_name\fPにコマンドを送ることにより、qvwmに内部コマ
+ンドを実行させることができます。この機能はqvwmがリモート・コマンドをサ
+ポートするようにコンパイルされており、AllowRemoteCmd変数がTrueの時にの
+み有効になります。コマンドを送ることができるのはqvwmを起動したユーザま
+たはrootだけです。
+.PP
+コマンドは'\n'で区切られた内部コマンドの文字列から成ります。例えば、
+QVWM_EXITコマンドを送りたければ、
+.EX
+echo "QVWM_EXIT" > /tmp/qvwm-:0.0
+.EE
+とします。
+
 .SH ファイル
 .IP $HOME/.qvwmrc 28
 ユーザ設定ファイル
@@ -870,11 +995,15 @@ Imlibを使うようにしていれば、Imlibがサポートしている形式の画像(jpeg等)
 ユーザテーマ設定ファイル(慣習的に.qvwmrcでincludeされる)
 .IP <QVWMDIR>/system.qvwmrc
 システム設定ファイル(<QVWMDIR>はコンパイル時に指定したディレクトリ)
+.IP /tmp/qvwm-\fIdisplay_name\fP
+リモートコマンド送信用FIFO
+
 
 .SH 警告
 qvwm は正式版になりましたが、環境によっては安定しないことがあります。
 qvwm を使用したことによるいかなる損害についても責任を負いかねますので、
 御自身の責任で使用して下さい。
+
 
 .SH 著者
 光来健一 (kourai@qvwm.org)

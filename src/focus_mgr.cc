@@ -1,7 +1,7 @@
 /*
  * focus_mgr.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "mini.h"
 #include "paging.h"
 #include "fbutton.h"
+#include "desktop.h"
 
 void FocusMgr::SetFocus(Qvwm* qvWm)
 {
@@ -42,11 +43,7 @@ void FocusMgr::SetFocus(Qvwm* qvWm)
   Qvwm::focusQvwm = qvWm;
 
   if (qvWm == rootQvwm) {
-    if (UseTaskbar)
-      XSetInputFocus(display, taskBar->GetFrameWin(), RevertToParent,
-		     CurrentTime);
-    else
-      XSetInputFocus(display, root, RevertToParent, CurrentTime);
+    desktop.SetFocus();
     scKey->GrabKeys(root);
     qvWm->InstallWindowColormaps();
 
@@ -65,21 +62,20 @@ void FocusMgr::SetFocus(Qvwm* qvWm)
 	XUngrabButton(display, i, 0, qvWm->GetWin());
   
     /*
-     * Set the input focus to this window. But if this window is root window,
-     * set it to taskbar window.
+     * Set the input focus to this window.
      */
     XSetInputFocus(display, qvWm->GetWin(), RevertToParent, CurrentTime);
 
     qvWm->InstallWindowColormaps();
-  }
 
-  /*
-   * Redraw according to focus change
-   */
-  qvWm->DrawTitle(True);
-  qvWm->ChangeFrameFocus();
-  for (int i = 0; i < 3; i++)
-    qvWm->fButton[i]->DrawButton();
+    /*
+     * Redraw according to focus change
+     */
+    qvWm->DrawTitle(True);
+    qvWm->ChangeFrameFocus();
+    for (int i = 0; i < 3; i++)
+      qvWm->fButton[i]->DrawButton();
+  }
 
   ASSERT(qvWm->tButton);
   qvWm->tButton->SetFocus();

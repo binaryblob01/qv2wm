@@ -6,8 +6,8 @@
 
 [Variables]
 LocaleName		= ""		; locale name used in this file
-ImagePath		= "@QVWMDIR@/images"
-SoundPath		= "@QVWMDIR@/sounds"
+ImagePath		= "@IMGDIR@"
+SoundPath		= "@SNDDIR@"
 RestartOnFailure	= True		; restart on seg fault/bus error
 UseDebugger		= True
 HourGlassTime		= 1000
@@ -78,6 +78,9 @@ DoubleClickRange	= 5		; max range between 2 clicks
 
 ; screen saver
 ScreenSaverDelay	= 0		; screen saver not used
+
+; sound
+EnableSound		= False		; enable sound facility
 
 ; from default.qvwm-theme
 WallPaper		= ""		; wall paper

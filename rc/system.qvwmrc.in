@@ -6,8 +6,8 @@
 
 [Variables]
 LocaleName		= ""		; locale name used in this file
-ImagePath		= "@QVWMDIR@/images"
-SoundPath		= "@QVWMDIR@/sounds"
+ImagePath		= "@IMGDIR@"
+SoundPath		= "@SNDDIR@"
 RestartOnFailure	= True		; restart on seg fault/bus error
 UseDebugger		= True
 HourGlassTime		= 1000
@@ -59,6 +59,7 @@ GradTaskbarMotionSpeed	= 10		; the speed
 TaskbarShowDelay	= 0		; delay for automatic show (ms)
 TaskbarHideDelay	= 500		; delay for automatic hide (ms)
 OnTopTaskbar		= True		; keep taskbar on top
+TaskbarButtonInScr	= False		; show only buttons for wins in screen
 StartButtonTitle	= "Start"	; string for start button
 StartButtonMessage	= "Start with this button."
 
@@ -105,6 +106,11 @@ TooltipDisplayTime	= 6000
 ; screen saver
 ScreenSaver		= "xlock"	; screen saver program
 ScreenSaverDelay	= 600		; start after 10 minutes
+
+; sound
+EnableSound		= True		; enable sound facility
+EnableAlsa		= False		; enable ALSA (Linux only)
+EnableEsd		= False		; enable EsounD
 
 ; theme
 include			@QVWMDIR@/default.qvwm-theme
@@ -221,6 +227,9 @@ include			@QVWMDIR@/default.qvwm-theme
 	"\&Left"		""		QVWM_LEFT_PAGING
 	"\&Right"		""		QVWM_RIGHT_PAGING
 -
+""			""		QVWM_SEPARATOR
+"Taskbar"		""		QVWM_TOGGLE_TASKBAR
+"Pager"			""		QVWM_TOGGLE_PAGER
 ""			""		QVWM_SEPARATOR
 "\&Exit qvwm"		""		QVWM_EXIT
 
@@ -348,7 +357,7 @@ F1		Alt		"xman"
 "XCalc"		SMALL_PIX="xcalc16.xpm", LARGE_PIX="xcalc32.ani", NO_BORDER_EDGE
 "XEyes"		SMALL_PIX="xeyes16.ani", LARGE_PIX="xeyes32.ani", NO_BORDER
 "xv"		SMALL_PIX="xv16.xpm", LARGE_PIX="xv32.xpm"
-"XClock"	NO_TBUTTON, NO_BORDER_EDGE
+"XClock"	NO_TBUTTON, NO_BORDER_EDGE, GEOMETRY="100x100-0-0"
 "oclock"	NO_TITLE, NO_BORDER
 "Netscape: subprocess diagnostics (stdout/stderr)"	CLOSE_SOON
 "Netscape Download"	ONTOP

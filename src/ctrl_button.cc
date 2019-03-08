@@ -1,7 +1,7 @@
 /*
  * ctrl_button.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "event.h"
 #include "qvwmrc.h"
 #include "paging.h"
+#include "function.h"
 
 /*
  * CreateCtrlButton --
@@ -97,9 +98,9 @@ void Qvwm::CtrlButton1Press(Time clickTime, const Point& ptRoot,
       umReserved = True;
     
     if (state & ControlMask)
-      ExecFunction(Q_KILL);
+      QvFunction::execFunction(Q_KILL, this);
     else
-      ExecFunction(Q_CLOSE);
+      QvFunction::execFunction(Q_CLOSE, this);
   }
   else {
     if (CheckMenuMapped())

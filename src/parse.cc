@@ -1,7 +1,7 @@
 /*
  * parse.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@
 #include "desktop.h"
 #include "accessory.h"
 #include "timer.h"
+#include "function.h"
 
-static Hash<FuncNumber>*	funcHashTable;
 static Hash<VariableTable>*	varHashTable;
 
 extern FILE*	yyin;
@@ -74,10 +74,6 @@ void ParseQvwmrc(char* rcFileName)
   /*
    * Initialize hash table.
    */
-  funcHashTable = new Hash<FuncNumber>(HashTableSize);
-  for (i = 0; i < FuncTableSize; i++)
-    funcHashTable->SetHashItem(funcTable[i].name, &funcTable[i].num);
-
   varHashTable = new Hash<VariableTable>(HashTableSize);
   for (i = 0; i < VarTableSize; i++)
     varHashTable->SetHashItem(varTable[i].name, &varTable[i]);
@@ -111,7 +107,6 @@ void ParseQvwmrc(char* rcFileName)
       SetFont();
     }
 
-    delete funcHashTable;
     delete varHashTable;
 
     return;
@@ -153,7 +148,6 @@ void ParseQvwmrc(char* rcFileName)
   }
 
   delete [] rcPath;
-  delete funcHashTable;
   delete varHashTable;
 }
 
@@ -216,30 +210,9 @@ void AssignVariable(const char* var, char* str)
 	
     case F_COLOR:
       {
-	XColor color;
 	XColor* pVal = (XColor *)vItem->var;
 
-	if (strcmp(str, "qvgray") == 0)
-	  *pVal = gray;
-	else if (strcmp(str, "qvdarkgray") == 0)
-	  *pVal = darkGray;
-	else if (strcmp(str, "qvlightgray") == 0)
-	  *pVal = lightGray;
-	else if (strcmp(str, "qvgrey") == 0)  // not qvgray!
-	  *pVal = grey;
-	else if (strcmp(str, "qvblue") == 0)
-	  *pVal = blue;
-	else if (strcmp(str, "qvlightblue") == 0)
-	  *pVal = lightBlue;
-	else if (strcmp(str, "qvgreen") == 0)
-	  *pVal = green;
-	else if (strcmp(str, "qvyellow") == 0)
-	  *pVal = yellow;
-	else if (XParseColor(display, colormap, str, &color) != 0) {
-	  XAllocColor(display, colormap, &color);
-	  *pVal = color;
-	}
-	else
+	if (GetXColorFromName(str, pVal) == -1)
 	  QvwmError("%d: '%s' is invalid color", line, str);
       }
       break;
@@ -297,46 +270,11 @@ void AssignVariable(const char* var, char* str)
 	
     case F_GEOMETRY:
       {
-	InternGeom ig, *iVal = (InternGeom *)vItem->var;
-	int bitmask;
-
-	bitmask = XParseGeometry(str, &ig.rc.x, &ig.rc.y,
-				 (unsigned int *)&ig.rc.width,
-				 (unsigned int *)&ig.rc.height);
-	if ((bitmask & (WidthValue|HeightValue)) != (WidthValue|HeightValue)) {
-	  QvwmError("%d: geometry requires width and height", line);
-	  break;
-	}
+	InternGeom* iVal = (InternGeom *)vItem->var;
 
 	ASSERT(iVal);
 
-	iVal->rc.width = ig.rc.width;
-	iVal->rc.height = ig.rc.height;
-
-	if (bitmask & XNegative) {     // EastGravity
-	  iVal->gravity.x = EAST;
-	  iVal->rc.x = DisplayWidth(display, screen) + ig.rc.x - ig.rc.width;
-	}
-	else if (bitmask & XValue) {   // WestGravity
-	  iVal->gravity.x = WEST;
-	  iVal->rc.x = ig.rc.x;
-	}
-	else {                         // CenterGravity
-	  iVal->gravity.x = CENTER;
-	  iVal->rc.x = ig.rc.x;
-	}
-	if (bitmask & YNegative) {     // SouthGravity
-	  iVal->gravity.y = SOUTH;
-	  iVal->rc.y = DisplayHeight(display, screen) + ig.rc.y - ig.rc.height;
-	}
-	else if (bitmask & YValue) {   // NorthGravity
-	  iVal->gravity.y = NORTH;
-	  iVal->rc.y = ig.rc.y;
-	}
-	else {                         // CenterGravity
-	  iVal->gravity.y = CENTER;
-	  iVal->rc.y = ig.rc.y;
-	}
+	SetGeometry(str, iVal);
       }
       break;
 
@@ -476,7 +414,7 @@ MenuElem* MakeFuncItem(char* name, char* file, char* func)
   mItem->file = file;
 #endif  
 
-  if ((fNum = funcHashTable->GetHashItem(func)) != NULL)
+  if ((fNum = QvFunction::funcHashTable->GetHashItem(func)) != NULL)
     mItem->func = *fNum;
   else
     mItem->func = Q_NONE;
@@ -519,7 +457,8 @@ MenuElem* MakeDlgFuncItem(char* name, char* str, char* func)
 
   mItem->name = name;
   mItem->file = str;
-  if (func == NULL || (fNum = funcHashTable->GetHashItem(func)) == NULL)
+  if (func == NULL ||
+      (fNum = QvFunction::funcHashTable->GetHashItem(func)) == NULL)
     mItem->func = Q_NONE;
   else
     mItem->func = *fNum;
@@ -603,6 +542,18 @@ void CompleteMenu(char* menuName, MenuElem* mItem)
 void DoAllSetting()
 {
   SetFont();
+
+  // backward compatibility
+  if (SystemStartSound == NULL)
+    SystemStartSound = OpeningSound;
+  if (SystemExitSound == NULL)
+    SystemExitSound = EndingSound;
+  if (SystemRestartSound == NULL)
+    SystemRestartSound = RestartSound;
+  if (RestoreUpSound == NULL && RestoreSound != NULL)
+    RestoreUpSound = RestoreSound;
+  if (RestoreDownSound == NULL && RestoreSound != NULL)
+    RestoreDownSound = RestoreSound;
 }
 
 /*
@@ -658,6 +609,8 @@ void CreateAppHash(char* appName, AttrStream* stream)
       attrs->small_file = stream->value;
     else if (stream->attr == LARGE_IMG)
       attrs->large_file = stream->value;
+    else if (stream->attr == GEOMETRY)
+      SetGeometry(stream->value, &attrs->geom);
 
     tmpStream = stream;
     stream = stream->next;
@@ -713,7 +666,7 @@ void CreateSCKeyFunc(char* key, unsigned int mod, char* func)
   KeySym sym;
   FuncNumber* fNum;
 
-  if ((fNum = funcHashTable->GetHashItem(func)) == NULL) {
+  if ((fNum = QvFunction::funcHashTable->GetHashItem(func)) == NULL) {
     QvwmError("'%s' is invalid function.", func);
     return;
   }
@@ -734,7 +687,9 @@ void CreateSCKeyFunc(char* key, unsigned int mod, char* func)
  */
 void CreateIndicator(char* comp, char* exec)
 {
-  new Indicator(exec, comp);
+  Indicator *ind;
+
+  ind = new Indicator(exec, comp);
 }
 
 void CreateAccessory(char* filename, char* pos, char* mode)

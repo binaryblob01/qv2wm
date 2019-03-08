@@ -135,6 +135,11 @@ CXXDEFINES += -DHAVE_VPRINTF
 #CXXSTD_DEFINES += -DDEBUG
 
 #
+# If you doesn't allow sending commands to qvwm, undefine ALLOW_RMTCMD
+#
+#define ALLOW_RMTCMD
+
+#
 # yacc and lex definitions
 #
 YACC = bison -y

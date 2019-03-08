@@ -1,7 +1,7 @@
 /*
  * paging.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,11 @@ public:
   void PagingAllWindows(const Point& oldOrigin, Bool rootFocus = True);
   void MapBelts();
   void RaisePagingBelt();
+
+  void SwitchPageLeft();
+  void SwitchPageRight();
+  void SwitchPageUp();
+  void SwitchPageDown();
 };
 
 #endif // _PAGING_H_

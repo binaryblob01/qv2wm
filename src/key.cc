@@ -1,7 +1,7 @@
 /*
  * key.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,8 +88,10 @@ Bool ShortCutKey::ExecShortCutKey(unsigned int keycode, unsigned int state,
   if (keycode == code && (state & ~(LockMask | numLockMask)) == mod) {
     switch (func) {
     case Q_EXEC:
-      if (exec)
+      if (exec) {
+	PlaySound(OpenSound);
 	ExecCommand(exec);
+      }
       return True;
       
     /* XXX */
@@ -100,7 +102,7 @@ Bool ShortCutKey::ExecShortCutKey(unsigned int keycode, unsigned int state,
       // FALLTHROUGH
       
     default:
-      menu->ExecFunction(func, 0);
+      QvFunction::execFunction(func, menu);
       return True;
     }
   }

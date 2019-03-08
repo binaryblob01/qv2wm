@@ -1,7 +1,7 @@
 /*
  * event.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@
 #include "tooltip.h"
 #include "session.h"
 #include "screen_saver.h"
+#include "remote_cmd.h"
 
 #if defined(sun) && !defined(__SVR4)
 extern "C" int select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
@@ -91,8 +92,18 @@ void Event::MainLoop()
 //  int s;
   int iceConnFd;
 #endif
+#ifdef ALLOW_RMTCMD
+  int rmtCmdFd = -1;
+#endif
 
   while (1) {
+    while (XPending(display) != 0) {
+      XNextEvent(display, &ev);
+      DispatchEvent(ev);
+
+      timer->CheckTimeout(&tm);
+    }
+
     FD_ZERO(&fds);
     FD_SET(fd, &fds);
     fdMax = fd;
@@ -101,18 +112,22 @@ void Event::MainLoop()
     iceConnFd = session->GetIceConnFd();
     if (iceConnFd >= 0) {
       FD_SET(iceConnFd, &fds);
-      if (iceConnFd > fd) {
+      if (iceConnFd > fdMax) {
 	fdMax = iceConnFd;
       }
     }
 #endif // USE_XSMP
 
-    while (XPending(display) != 0) {
-      XNextEvent(display, &ev);
-      DispatchEvent(ev);
-
-      timer->CheckTimeout(&tm);
+#ifdef ALLOW_RMTCMD
+    if (AllowRemoteCmd) {
+      rmtCmdFd = remoteCmd->getRmtCmdFd();
+      if (rmtCmdFd >= 0) {
+	FD_SET(rmtCmdFd, &fds);
+	if (rmtCmdFd > fdMax)
+	  fdMax = rmtCmdFd;
+      }
     }
+#endif // ALLOW_RMTCMD
 
 /* ???
 #ifdef USE_XSMP
@@ -133,6 +148,9 @@ void Event::MainLoop()
     // flushed until select is returned.
     XFlush(display);
 
+    if (XPending(display) > 0)
+      continue;
+
 #if defined(__hpux) && !defined(_XPG4_EXTENDED)
     if (select(fdMax + 1, (int *)&fds, 0, 0, timep) == 0) {    // timeout
 #else
@@ -152,6 +170,11 @@ void Event::MainLoop()
       //}
     }
 #endif // USE_XSMP
+#ifdef ALLOW_RMTCMD
+    else if (rmtCmdFd >= 0 && FD_ISSET(rmtCmdFd, &fds)) {
+      remoteCmd->process();
+    }
+#endif
   }
 }
 
@@ -698,7 +721,6 @@ void Event::MapNotifyProc(const XMapEvent& ev)
 void Event::UnmapNotifyProc(const XUnmapEvent& ev)
 {
   Qvwm* qvWm;
-  Bool yield = False;
 
   if (XFindContext(display, ev.window, Qvwm::context, (caddr_t*)&qvWm)
       == XCSUCCESS) {
@@ -710,9 +732,17 @@ void Event::UnmapNotifyProc(const XUnmapEvent& ev)
 
     Rect rcRoot = rootQvwm->GetRect();
     Rect rcOrig = qvWm->GetOrigRect();
+    Point pt;
 
-    XReparentWindow(display, qvWm->GetWin(), root,
-		    rcOrig.x % rcRoot.width, rcOrig.y % rcRoot.height);
+    // adjust the position so that the window is in the real screen
+    pt.x = rcOrig.x % rcRoot.width;
+    if (pt.x < 0)
+      pt.x += rcRoot.width;
+    pt.y = rcOrig.y % rcRoot.height;
+    if (pt.y < 0)
+      pt.y += rcRoot.height;
+    
+    XReparentWindow(display, qvWm->GetWin(), root, pt.x, pt.y);
     XUnmapWindow(display, qvWm->GetWin());
 
     DestroyQvwm(qvWm);
@@ -744,14 +774,16 @@ void Event::DestroyQvwm(Qvwm* qvWm)
 {
   Bool yield = False;
 
-  if (qvWm->CheckMapped()) {
-    if (qvWm == Qvwm::focusQvwm) {
-      yield = True;
-      qvWm->YieldFocus();
-    }
-    qvWm->UnmapWindows();
-    focusMgr.RemoveUnmapList(qvWm);
+  if (qvWm == Qvwm::focusQvwm) {
+    yield = True;
+    qvWm->YieldFocus();
   }
+
+  if (qvWm->CheckMapped())
+    qvWm->UnmapWindows();
+
+  focusMgr.RemoveUnmapList(qvWm);
+  focusMgr.Remove(qvWm);
 
   XRemoveFromSaveSet(display, qvWm->GetWin());
   desktop.GetQvwmList().Remove(qvWm);

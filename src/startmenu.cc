@@ -1,7 +1,7 @@
 /*
  * startmenu.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,7 +169,18 @@ void StartMenu::MapMenu()
 	dir = GD_LEFT;
 	break;
       }
+
+    default:
+      dir = 0;  // XXX for warning
+      ASSERT(False);
     }
+  }
+  else {
+    Rect rcRoot = rootQvwm->GetRect();
+
+    rc.x = 2;
+    rc.y = rcRoot.height - rc.height - 2;
+    dir = GD_UP;
   }
     
   Menu::MapMenu(rc.x, rc.y, dir);

@@ -1,7 +1,7 @@
 /*
  * debug.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,20 +20,6 @@
 
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
-
-#ifdef DEBUG
-#include <stdio.h>
-# define ASSERT(ex) {						\
-  if(!(ex)) {							\
-    fprintf(stderr,"Assertion failed: file \"%s\", line %d\n",	\
-	    __FILE__, __LINE__);				\
-    ::FinishQvwm();						\
-    abort();							\
-  }								\
-}
-#else
-# define ASSERT(ex)
-#endif
 
 class Debug {
 private:

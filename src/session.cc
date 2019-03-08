@@ -1,7 +1,7 @@
 /*
  * session.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,15 +236,27 @@ Session::InitializeProperties()
     userIdValue
   };
 
-  SmProp *properties[5] = {
+  char val = 30;
+  SmPropValue gsmPriorityValue[1] = {
+      {1, &val}
+  };
+  SmProp gsmPriority = {
+    "_GSM_Priority",
+    SmCARD8,
+    1,
+    gsmPriorityValue
+  };
+
+  SmProp *properties[6] = {
     &cloneCommand,
     &discardCommand,
     &program,
     &restartCommand,
-    &userId
+    &userId,
+    &gsmPriority
   };
   
-  SmcSetProperties(connId, 5, properties);
+  SmcSetProperties(connId, 6, properties);
 }
 
 Bool

@@ -1,7 +1,7 @@
 /*
  * extra_image.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,16 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 #ifdef USE_IMLIB
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <Imlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "main.h"
 #include "extra_image.h"
 
@@ -42,39 +45,26 @@ ExtraImage::ExtraImage(char* filename)
 // to create an image from raw data...
 ExtraImage::ExtraImage(char* data, int len)
 {
-  char* filename = tmpnam(NULL);
-  FILE* fp;
+  char filename[16] = "/tmp/qvwmXXXXXX";  /* must not be constant */
   int fd;
 
-  if (filename == NULL) {
-    QvwmError("cannot create an unique temporary file name");
+  if ((fd = mkstemp(filename)) < 0) {
+    QvwmError("cannot create a temporary file");
     m_error = -1;
     return;
   }
 
-  // using tmpnam induces a race condition, which we can't avoid - but we do
-  // our best to protect ourselves
-  if ((fd = open(filename, O_RDWR | O_CREAT | O_EXCL,
-		 S_IRUSR | S_IWUSR)) == -1 ||
-      (fp = fdopen(fd, "w")) == NULL) {
-    QvwmError("cannot create a temporary file: %s", filename);
+  if (write(fd, data, len) < len) {
+    QvwmError("cannot write to a temporary file");
     m_error = -1;
-    return;
-  }
-
-  if (fwrite(data, len, 1, fp) < 1) {
-    QvwmError("cannot write to a temporary file: %s", filename);
-    m_error = -1;
-    fclose(fp);
+    close(fd);
     return;
   }
     
-  fflush(fp);
   m_error = LoadImage(filename);
 
-  // *must* unlink before close
   unlink(filename);
-  fclose(fp);
+  close(fd);
 }
 
 int ExtraImage::LoadImage(char* filename)

@@ -1,7 +1,7 @@
 /*
  * qvwm.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "hash.h"
 #include "tbutton.h"
 #include "list.h"
-#include "debug.h"
 
 /*
  * Frame attributes
@@ -57,6 +56,7 @@
 #define SMALL_IMG         (1L << 21)	// has particular small pixmap (16x16)
 #define LARGE_IMG         (1L << 22)	// has particular large pixmap (32x32)
 #define FIXED_POS         (1L << 23)	// locate in fixed position
+#define GEOMETRY          (1L << 24)	// has specified geometry
 
 #define DECOR_MASK        0xff		// mask for window decorations
 
@@ -116,6 +116,7 @@ private:
   char* shortname;               // Window name fitted to titlebar size
   QvImage* imgSmall;         // Small icon image for control menu
   QvImage* imgLarge;         // Large icon image for task switcher
+  InternGeom* geom;              // specified geometry
   XSizeHints hints;
   XWMHints* wmHints;
   XClassHint classHints;
@@ -190,6 +191,8 @@ private:
   void CreateSides(const Rect rect[]);
   void CreateCorners(const Rect rect[]);  
   void CreateEdges(const Rect rect[]);  
+
+  void GetWindowAttrs(Bool usrPos);
   void ChangeOrigWindow();
   void SetTransient();
 
@@ -207,6 +210,7 @@ private:
   void GetWindowClassHints();
   void GetWindowSizeHints();
   Point& GetGravityOffset();
+  void GetTransientForHint();
   QvImage* GetFixedIcon(int size);
 
 #ifdef USE_XSMP
@@ -268,6 +272,7 @@ public:
 
   void SetFocus();
   void YieldFocus();
+  static void SetFocusToActiveWindow();
 
   void MoveWindow(const Point& ptPress, Bool mouseMove);
   void FixWindowPos(Rect& rcShown);
@@ -285,11 +290,6 @@ public:
 		    Bool motion = True);
   void FixExpandedShape(int directions, const RectPt& rpTest,
 			const RectPt& rpOrig, RectPt& rpNew);
-
-  void ExecFunction(FuncNumber fn) {
-    ctrlMenu->SetQvwm(this);
-    ctrlMenu->ExecFunction(fn, 0);
-  }
 
   void SendMessage(Atom atom);
   void KillClient() {

@@ -1,7 +1,7 @@
 /*
  * property.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,8 +55,6 @@ static QvImage* GetDefLogo(int size);
  */
 void Qvwm::SetProperty(Atom atom)
 {
-  int n;
-
   switch (atom) {
   case XA_WM_NAME:
     name = GetNameFromHint();
@@ -179,6 +177,9 @@ void Qvwm::GetWindowClassHints()
 	imgSmall = attrs->small_img->Duplicate();
     }
 
+    if (CheckFlags(GEOMETRY))
+      geom = &attrs->geom;
+
     if (CheckFlags(ONTOP)) {
       desktop.GetOnTopList().InsertTail(this);
       Gnome::ChangeLayer(this, WIN_LAYER_ONTOP);
@@ -245,10 +246,15 @@ void Qvwm::GetWindowSizeHints()
  */
 Point& Qvwm::GetGravityOffset()
 {
-  int gr = NorthWestGravity;
+  int gr;
+
+  if (CheckFlags(GEOMETRY) && !CheckFlags(FIXED_POS))
+    return geom->gravity;
 
   if (hints.flags & PWinGravity)
     gr = hints.win_gravity;
+  else
+    gr = NorthWestGravity;
 
   if (gr < ForgetGravity || gr > StaticGravity)
     return GravityOffset[NorthWestGravity];
@@ -295,6 +301,31 @@ void Qvwm::FetchWMProtocols()
       if (protocols)
 	XFree(protocols);
     }
+  }
+}
+
+void Qvwm::GetTransientForHint()
+{
+  Window tWin;
+
+  if (XGetTransientForHint(display, wOrig, &tWin)) {
+    if (XFindContext(display, tWin, context, (caddr_t*)&qvMain) == XCSUCCESS) {
+      qvMain->trList.InsertTail(this);
+      if (qvMain->CheckFlags(ONTOP) && !CheckFlags(ONTOP)) {
+	SetFlags(ONTOP);
+	desktop.GetOnTopList().InsertTail(this);
+	Gnome::ChangeLayer(this, WIN_LAYER_ONTOP);
+      }
+    }
+    else
+      qvMain = NULL;
+
+    SetFlags(TRANSIENT);
+    ResetFlags(CTRL_MENU | BORDER_EDGE | BUTTON1 | BUTTON2 | BUTTON3);
+  }
+  else {
+    qvMain = NULL;           // meaning this window itself is a main window
+    ResetFlags(TRANSIENT);
   }
 }
 

@@ -1,7 +1,7 @@
 /*
  * resize_sp.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -247,6 +247,11 @@ void Qvwm::RestoreWindow(Bool motion, Bool mapTransient)
     rc.y += paging->origin.y;
 
     ResetFlags(BORDER);
+
+    if (UseTaskbar && motion) {
+      PlaySound(RestoreUpSound);
+      MotionTitlebar(rcSrc, rcDest);
+    }
   }
   else if (CheckStatus(MINIMIZE_WINDOW)) {
     /*
@@ -268,6 +273,11 @@ void Qvwm::RestoreWindow(Bool motion, Bool mapTransient)
     rcDest = rc;
     rcDest.x -= paging->origin.x;
     rcDest.y -= paging->origin.y;
+
+    if (UseTaskbar && motion) {
+      PlaySound(RestoreUpSound);
+      MotionTitlebar(rcSrc, rcDest);
+    }
   }
   else if (CheckStatus(MAXIMIZE_WINDOW)) {
     /*
@@ -291,11 +301,11 @@ void Qvwm::RestoreWindow(Bool motion, Bool mapTransient)
       XMapWindow(display, side[i]);
       XMapWindow(display, corner[i]);
     }
-  }
 
-  if (UseTaskbar && motion) {
-    PlaySound(RestoreSound);
-    MotionTitlebar(rcSrc, rcDest);
+    if (UseTaskbar && motion) {
+      PlaySound(RestoreDownSound);
+      MotionTitlebar(rcSrc, rcDest);
+    }
   }
 
   ConfigureNewRect(rc);

@@ -1,7 +1,7 @@
 /*
  * button.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ void Button::DrawButton()
   xp[2].y = rc.height - 2;
 
   if (state == PUSH)
-    XSetForeground(display, gc, black.pixel);
+    XSetForeground(display, gc, darkGrey.pixel);
   else
     XSetForeground(display, gc, white.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
@@ -126,7 +126,7 @@ void Button::DrawButton()
   if (state == PUSH)
     XSetForeground(display, gc, white.pixel);
   else
-    XSetForeground(display, gc, black.pixel);
+    XSetForeground(display, gc, darkGrey.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
 
   xp[0].x = rc.width - 3;
@@ -139,7 +139,7 @@ void Button::DrawButton()
   if (state == PUSH)
     XSetForeground(display, gc, darkGray.pixel);
   else
-    XSetForeground(display, gc, lightGray.pixel);
+    XSetForeground(display, gc, gray.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
 
   xp[0].x = rc.width - 2;
@@ -150,7 +150,7 @@ void Button::DrawButton()
   xp[2].y = rc.height - 2;
   
   if (state == PUSH)
-    XSetForeground(display, gc, lightGray.pixel);
+    XSetForeground(display, gc, gray.pixel);
   else
     XSetForeground(display, gc, darkGray.pixel);
   XDrawLines(display, frame, gc, xp, 3, CoordModeOrigin);
@@ -228,6 +228,10 @@ void Button::Button1Press()
       }
     }
   }
+}
+
+void Button::Button3Release(const Point& ptRoot)
+{
 }
 
 void Button::Enter()

@@ -1006,3 +1006,82 @@
    にした。
 10. ウィンドウを閉じるタイミングによっておかしなツールチップが出ること
     があるバグを修正。
+
+1.1.7 -> 1.1.8 の変更点
+-----------------------
+1. memory 回りのバグを修正。
+2. セキュリティを高めるために tmpnam() の代わりに mkstemp() を使うよう
+   にした。(Imlib を使う時にだけ影響する)
+3. 引数 -clientId が認識されなくなっていたバグを修正。
+
+1.1.8 -> 1.1.9 の変更点
+-----------------------
+1. accessory を配置する場所を +x+y の記法で指定した時、正しい位置に配
+   置されないことがあるバグを修正。
+2. セッションを復元する時に gmc のアイコンが元に位置に戻らないバグを修
+   正。
+3. インジケータに指定したプログラムが見つからない時、qvwm が落ちるバグ
+   を修正。
+4. ウィンドウがプログラムで指定した位置に配置されないことがあるバグを
+   修整。
+5. NO_FOCUS 指定したウィンドウの移動、サイズ変更、メニュー表示した後で
+   アクティブウィンドウに入力できなくなるバグを修正。
+6. 終了ダイアログを出した後にフォーカスがおかしくなるバグを修正。
+7. TaskbarButtonInScr を True にするとタスクバーに画面内にあるウィン
+   ドウのタスクバーボタンしか表示しないようにした。
+8. QVWM_TOGGLE_TASKBAR, QVWM_TOGGLE_PAGER 関数でタスクバー、ページャの
+   表示・非表示を切り替えられるようにした。
+
+1.1.9 -> 1.1.10 の変更点
+------------------------
+1. configure で画像と音声を置くディレクトリを指定できるようにし、設定
+   ファイルの ImagePath/SoundPath のデフォルトになるようにした。
+2. SunOS/Solaris で audio.cc がコンパイルエラーが出るバグを修正。
+3. egcs 2.95 以上で環境によってはコンパイルエラーが出るバグを修正。
+4. ALSA (Advanced Linux Sound Architecture) ver 0.5 をサポート。
+5. サウンドを制御する変数を追加。(EnableSound, SoundAlsa, SoundEsd)
+6. netscape で新しいページを開いた時、ウィンドウがおかしな状態になるバ
+   グを修正。
+7. スクリーンセイバーとサウンドが有効になっている時、起動時に落ちるこ
+   とがあるバグを修正。
+8. /tmp/qvwm-<display_name> にコマンドを送ることで、他のプロセスから
+   qvwm に内部コマンドを実行させることができるようになった。configure
+   に --enable-rmtcmd を指定し(デフォルト)、AllowRemoteCmd 変数を True
+   にした場合だけ有効になる。
+9. DisableDesktopChange 変数を追加した。True ならユーザはタスクバーや
+   アイコンを動かせない。
+10. [Applications] セクションで指定できる GEOMETRY 属性を追加した。ウィ
+    ンドウの位置・サイズを指定できる。
+11. ウィンドウを整列する関数を追加した。
+    QVWM_OVERLAP_INSCR, QVWM_TILE_HORZ_INSCR, QVWM_TILE_VERT_INSCR,
+    QVWM_MINIMIZE_ALL_INSCR, QVWM_RESTORE_ALL, QVWM_RESTORE_ALL_INSCR,
+    QVWM_CLOSE_ALL, QVWM_CLOSE_ALL_INSCR。それに伴い、QVWM_OVERLAP,
+    QVWM_TILE_HORZ, QVWM_TILE_VERT, QVWM_MINIMIZE は全てのウィンドウを
+    整列する関数に変更された。
+12. ClickingRaises が True の時にウィンドウの中身をクリックしてもアク
+    ティブにならないことがあるバグを修正。
+13. qvwm の -display オプションを指定した時に DISPLAY 環境変数に反映さ
+    せるようにした。インジケータやアプリケーションを qvwm と同じディス
+    プレイに表示できる。
+14. タスクバーとページャを制御する関数を追加した。
+    QVWM_ENABLE_AUTOHIDE, QVWM_DISABLE_AUTOHIDE, QVWM_ENABLE_TASKBAR,
+    QVWM_DISABLE_TASKBAR, QVWM_ENABLE_PAGER, QVWM_DISABLE_PAGER。
+15. 最小化されたウィンドウをタスクバーボタンのメニューから閉じ、他のウィ
+    ンドウをアクティブにした時、qvwm が落ちることがあるバグを修正。
+16. netscape が負の座標を持つ仮想ページに配置された時、ダイアログを表
+    示すると二回目以降、左か上のページに配置されるバグを修正。
+
+1.1.10 -> 1.1.11 の変更点
+-------------------------
+1. タスクスイッチャに同一ウィンドウに対して二つのアイコンが表示される
+   バグを修正。
+2. 色々なイベントで音を鳴らすようにした。RestoreUpSound, RestoreDownSound,
+   MenuPopupSound, MenuCommandSound, OpenSound, CloseSound,
+   PagerSound, PagingSound.
+3. OpeningSound, EndingSound, RestartSound をそれぞれ SystemStartSound,
+   SystemExitSound, SystemRestartSound に変更した。
+4. サウンドファイルが "" の時にエラーを表示するバグを修正。
+5. サウンドを鳴らした後に不安定になることがあるバグを修正。
+6. 配色を Windows 2000 風にした。
+7. インジケータアイコンが全部消えた後、タスクトレイの時計の一部が表示
+   されなくなるバグを修正。

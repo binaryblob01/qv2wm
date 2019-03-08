@@ -1,7 +1,7 @@
 /*
  * pixmap_image.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #endif
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -140,21 +141,20 @@ int PixmapImage::CreatePixmap(char** data)
     return IMG_UNKNOWN_ERROR;
   
   m_size = Dim(m_im->rgb_width, m_im->rgb_height);
-
+  
   Imlib_render(ExtraImage::m_idImlib, m_im, m_size.width, m_size.height);
-
+  
   m_pix = Imlib_move_image(ExtraImage::m_idImlib, m_im);
   m_mask = Imlib_move_mask(ExtraImage::m_idImlib, m_im);
-
+  
   XGCValues gcv;
   gcv.clip_mask = m_mask;
   m_gc = XCreateGC(display, root, GCClipMask, &gcv);
-
+  
   m_import = True;  // pixmap and mask are managed by Imlib
-
+  
   return 0;
-
-#else // USE_IMLIB
+#else
   XpmAttributes attr;
   int error;
 
@@ -170,15 +170,15 @@ int PixmapImage::CreatePixmap(char** data)
     m_size = Dim(attr.width, attr.height);
     return 0;
   }
-
+  
   switch (error) {
   case XpmColorFailed:
     return IMG_COLOR_ERROR;
-
+    
   case XpmNoMemory:
     return IMG_MEMORY_ERROR;
-
-  defaults:
+    
+  default:
     return IMG_UNKNOWN_ERROR;
   }
 #endif // USE_IMLIB

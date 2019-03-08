@@ -1,7 +1,7 @@
 /*
  * paging.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -196,6 +196,8 @@ Point Paging::HandlePaging(const Point& pt)
       return Point(0, 0);
   }
 
+  PlaySound(PagingSound);
+
   ptNew = PagingProc(belt[pos]);
 
   XSync(display, 0);
@@ -364,6 +366,11 @@ void Paging::PagingAllWindows(const Point& oldOrigin, Bool rootFocus)
 
   if (rootFocus && UseTaskbar && TaskbarAutoHide)
     taskBar->HideTaskbar();
+
+  if (TaskbarButtonInScr) {
+    if (taskBar)
+      taskBar->RedrawAllTaskbarButtons();
+  }
 }
 
 void Paging::MapBelts()
@@ -514,4 +521,60 @@ Paging::BeltPos Paging::GetBeltPos(const Point& pt)
   ASSERT(FALSE);
 
   return BOTTOM;  // XXX
+}
+
+void Paging::SwitchPageLeft()
+{
+  if (Menu::CheckAnyMenusMapped())
+    return;
+
+  Rect rcRoot = rootQvwm->GetRect();
+  Point oldOrigin = origin;
+
+  origin.x -= rcRoot.width;
+  PagingAllWindows(oldOrigin);
+
+  desktop.ChangeFocusToCursor();
+}
+
+void Paging::SwitchPageRight()
+{
+  if (Menu::CheckAnyMenusMapped())
+    return;
+
+  Rect rcRoot = rootQvwm->GetRect();
+  Point oldOrigin = origin;
+
+  origin.x += rcRoot.width;
+  PagingAllWindows(oldOrigin);
+
+  desktop.ChangeFocusToCursor();
+}
+
+void Paging::SwitchPageUp()
+{
+  if (Menu::CheckAnyMenusMapped())
+    return;
+
+  Rect rcRoot = rootQvwm->GetRect();
+  Point oldOrigin = origin;
+
+  origin.y -= rcRoot.height;
+  PagingAllWindows(oldOrigin);
+
+  desktop.ChangeFocusToCursor();
+}
+
+void Paging::SwitchPageDown()
+{
+  if (Menu::CheckAnyMenusMapped())
+    return;
+
+  Rect rcRoot = rootQvwm->GetRect();
+  Point oldOrigin = origin;
+
+  origin.y += rcRoot.height;
+  PagingAllWindows(oldOrigin);
+
+  desktop.ChangeFocusToCursor();
 }

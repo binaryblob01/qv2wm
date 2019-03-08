@@ -1,7 +1,7 @@
 /*
  * window.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -321,10 +321,7 @@ void Qvwm::RaiseWindow(Bool soon)
 */
 
     if (this != activeQvwm)
-      for (int i = 1; i < 4; i++)
-	XUngrabButton(display, i, 0, wOrig);
-
-    activeQvwm = this;
+      activeQvwm = this;
   }
 }
 
@@ -384,11 +381,10 @@ void Qvwm::LowerWindow()
     // XQueryTree returns windows in correct stacking order, lowest first
     XQueryTree(display, root, &junkRoot, &junkParent, &children, &nChildren);
 
-    List<Qvwm>::Iterator i(&desktop.GetQvwmList());
     Qvwm* qvWm;
     int j;
     
-    for (j = 0; j < nChildren; j++) {
+    for (j = 0; j < (int)nChildren; j++) {
       if (XFindContext(display, children[j], context, (caddr_t*)&qvWm)
 	  == XCSUCCESS) {
          if (qvWm == this) // this is already lowest window
@@ -402,7 +398,7 @@ void Qvwm::LowerWindow()
       XFree(children);
 
     // not found
-    if (j == nChildren)
+    if (j == (int)nChildren)
       return;
 
     Window wins[2];
@@ -588,5 +584,8 @@ void Qvwm::AnimateWindow(Bool map)
       XFlush(display);
       usleep(10000);
     }
+
+  case Normal:
+    break;
   }
 }

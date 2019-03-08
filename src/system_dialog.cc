@@ -1,7 +1,7 @@
 /*
  * system_dialog.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ void SystemDialog::SetRect(const Rect& rect)
  */
 void SystemDialog::CreateDialogResource(DialogRes** dr, int drNum)
 {
-  RadioButton** rb;
+  RadioButton** rb = NULL;
   int i, nRb = 0, nSb = 0, nRs = 0, nSt = 0, nIp = 0;
 
   for (i = 0; i < drNum; i++) {
@@ -147,6 +147,9 @@ void SystemDialog::CreateDialogResource(DialogRes** dr, int drNum)
 
     case ICONPIXMAP:
       ipNum++;
+      break;
+
+    default:
       break;
     }
   }
@@ -229,6 +232,8 @@ void SystemDialog::MapDialog()
 
 void SystemDialog::UnmapDialog()
 {
+  Dialog::UnmapDialog();
+
   XUnmapWindow(display, parent);
 }
 
@@ -251,7 +256,7 @@ void SystemDialog::DrawDialog()
   xp[2].x = 0;
   xp[2].y = height - 2;
 
-  XSetForeground(display, ::gc, lightGray.pixel);
+  XSetForeground(display, ::gc, gray.pixel);
   XDrawLines(display, parent, ::gc, xp, 3, CoordModeOrigin);
   
   xp[0].x = width - 1;
@@ -261,7 +266,7 @@ void SystemDialog::DrawDialog()
   xp[2].x = 0;
   xp[2].y = height - 1;
 
-  XSetForeground(display, ::gc, black.pixel);
+  XSetForeground(display, ::gc, darkGrey.pixel);
   XDrawLines(display, parent, ::gc, xp, 3, CoordModeOrigin);
 
   xp[0].x = width - 3;

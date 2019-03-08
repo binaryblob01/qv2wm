@@ -1,7 +1,7 @@
 /*
  * dialog.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,9 +49,10 @@ public:
   void SetTitle(char* dlgname);
 
   virtual void MapDialog();
-  virtual void DrawClientWin() {}
+  virtual void UnmapDialog();
+  virtual void DrawClientWin();
   virtual ResourceId EventLoop();
-  virtual void Exposure(Window win) {}
+  virtual void Exposure(Window win);
   virtual ResourceId Button1Press(Window win);
   virtual ResourceId FindShortCutKey(char key);
 

@@ -1,7 +1,7 @@
 /*
  * list.h
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,13 @@
 #ifndef _LIST_H_
 #define _LIST_H_
 
-#include "debug.h"
+#include "message.h"
 
 template <class T>
 class List {
 public:
   class Iterator;
+  friend class Iterator;
 
 protected:
   class Item {
@@ -43,7 +44,7 @@ protected:
   };
 
 public:
-  friend class Iterator {
+  class Iterator {
   protected:
     List<T>* list;
     Item* current;

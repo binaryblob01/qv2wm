@@ -1,7 +1,7 @@
 /*
  * util.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -493,7 +493,7 @@ pid_t ExecCommand(char* exec)
 #else
   if ((pid = vfork()) == 0) {
     if (execl(SHELL, SHELL, "-c", cmd, NULL) == -1) {
-      QvwmError("Can't execute '%s'", exec);
+      QvwmError("Can't execute '%s'", &cmd[5]);
       _exit(1);
     }
   }
@@ -688,9 +688,12 @@ void DrawRealString(Window w, XFontSet fs, GC gc, int x, int y, char* str)
 
 void PlaySound(char* file, Bool sync)
 {
-  if (file == NULL)
+  if (file == NULL || file[0] == '\0')
     return;
   
+  if (!EnableSound)
+    return;
+
 #ifndef __EMX__
   if (!sync) {
     pid_t pid = fork();
@@ -707,10 +710,22 @@ void PlaySound(char* file, Bool sync)
   else if (filelen > 3 && strcmp(&file[filelen - 3], ".au") == 0)
     audio = new AudioAu(AUDIODEV);
   else {
-    QvwmError("not supported sound format: %s", file);
-    return;
+    QvwmError("unsupported extentions of sound file: %s", file);
+    if (sync)
+      return;
+    else
+      exit(0);
   }
     
+  // EnableSound may be set to False in Audio constructor
+  if (!EnableSound) {
+    delete audio;
+    if (sync)
+      return;
+    else
+      exit(0);
+  }
+
   switch (file[0]) {
   case '/':
     ret = audio->Play(file);
@@ -744,6 +759,11 @@ void PlaySound(char* file, Bool sync)
 
 	delete [] filename;
 
+	if (ret == AUDIO_FATAL) {
+	  /* do not try audio after that */
+	  EnableSound = False;
+	  break;
+	}
 	if (ret != AUDIO_NOFILE)
 	  break;
 
@@ -755,29 +775,13 @@ void PlaySound(char* file, Bool sync)
     break;
   }
 
-  switch (ret) {
-  case AUDIO_NOFILE:
-    QvwmError("not found sound file: %s", file);
-    break;
-    
-  case AUDIO_BROKEN:
-    QvwmError("sound file '%s' is broken", file);
-    break;
-    
-  case AUDIO_BADFMT:
-    QvwmError("sound file '%s' is bad format", file);
-    break;
-
-  default:
-    if (ret < 0)
-      QvwmError("audio error: %d", -ret);
-    break;
-  }
+  if (ret == AUDIO_NOFILE)
+    QvwmError("not found sound file: '%s'", file);
 
   delete audio;
   
   if (!sync)
-    _exit(0);
+    exit(0);
 #endif // __EMX__
 }
 
@@ -812,7 +816,8 @@ Bool IsPointerInWindow(const Point& ptRoot)
  *   Allocate color from red, green and blue.
  */
 int CreateColor(unsigned short red, unsigned short green,
-		unsigned short blue, XColor* color)
+		unsigned short blue, XColor* color, XColor* substitute,
+		const char* comment)
 {
   int status;
 
@@ -821,9 +826,128 @@ int CreateColor(unsigned short red, unsigned short green,
   color->blue = blue;
 
   status = XAllocColor(display, colormap, color);
+  if (status == 0) {
+    if (comment)
+      QvwmError("cannot allocate color: %s", comment);
 
-  if (status == 0)
-    color->pixel = 0;
+    if (substitute)
+      *color = *substitute;
+    else
+      color->pixel = 0;
+  }
 
   return status;
+}
+
+// require is a set of indispensable parameters
+Bool SetGeometry(char* str, InternGeom* geom)
+{
+  if (geom == NULL)
+    return False;
+
+  // initialize
+  geom->rc = Rect(0, 0, 0, 0);
+
+  geom->bitmask = XParseGeometry(str, &geom->rc.x, &geom->rc.y,
+				 (unsigned int *)&geom->rc.width,
+				 (unsigned int *)&geom->rc.height);
+
+
+  if (geom->bitmask & XNegative)    // EastGravity
+    geom->gravity.x = EAST;
+  else if (geom->bitmask & XValue)  // WestGravity
+    geom->gravity.x = WEST;
+  else                              // CenterGravity
+    geom->gravity.x = CENTER;
+
+  if (geom->bitmask & YNegative)    // SouthGravity
+    geom->gravity.y = SOUTH;
+  else if (geom->bitmask & YValue)  // NorthGravity
+    geom->gravity.y = NORTH;
+  else                              // CenterGravity
+    geom->gravity.y = CENTER;
+
+  return True;
+}
+
+void SetDisplayEnv(const char* displayName)
+{
+  static char envStr[256];
+
+  snprintf(envStr, 256, "DISPLAY=%s", displayName);
+
+  putenv(envStr);
+}
+
+int GetXColorFromName(const char* str, XColor* color)
+{
+  if (strcmp(str, "qvgray") == 0)
+    *color = gray;
+  else if (strcmp(str, "qvdarkgray") == 0)
+    *color = darkGray;
+  else if (strcmp(str, "qvgrey") == 0)
+    *color = grey;
+  else if (strcmp(str, "qvdarkgrey") == 0)
+    *color = darkGrey;
+  else if (strcmp(str, "qvblue") == 0)
+    *color = blue;
+  else if (strcmp(str, "qvlightblue") == 0)
+    *color = lightBlue;
+  else if (strcmp(str, "qvroyalblue") == 0)
+    *color = royalBlue;
+  else if (strcmp(str, "qvyellow") == 0)
+    *color = yellow;
+  else if (strcmp(str, "qvlightyellow") == 0)
+    *color = lightYellow;
+  else if (strcmp(str, "qvgray95") == 0) {
+    if (gray95.pixel == 0)
+      CreateColor(0xbefb, 0xbefb, 0xbefb, &gray95, &white, "qvgray95");
+    *color = gray95;
+  }
+  else if (strcmp(str, "qvdarkgray95") == 0) {
+    if (darkGray95.pixel == 0)
+      CreateColor(0x79e7, 0x7df7, 0x79e7, &darkGray95, &black,
+		  "qvdarkgray95");
+    *color = darkGray95;
+  }
+  else if (strcmp(str, "qvlightgray95") == 0) {
+    if (lightGray95.pixel == 0)
+      CreateColor(0xdf7d, 0xdf7d, 0xdf7d, &lightGray95, &gray95,
+		  "qvlightgray95");
+    *color = lightGray95;
+  }
+  else if (strcmp(str, "qvgrey95") == 0) { // not qvgray!
+    if (grey95.pixel == 0)
+      CreateColor(0xb6da, 0xb2ca, 0xb6da, &grey95, &gray95, "qvgrey95");
+    *color = grey95;
+  }
+  else if (strcmp(str, "qvblue95") == 0) {
+    if (blue95.pixel == 0)
+      CreateColor(0x0000, 0x0000, 0x79e7, &blue95, &black, "qvblue95");
+    *color = blue95;
+  }
+  else if (strcmp(str, "qvlightblue95") == 0) {
+    if (lightBlue95.pixel == 0)
+      CreateColor(0x0820, 0x8207, 0xcf3c, &lightBlue95, &blue95,
+		  "qvlightblue95");
+    *color = lightBlue95;
+  }
+  else if (strcmp(str, "qvgreen95") == 0) {
+    if (green95.pixel == 0)
+      CreateColor(0x0000, 0x7df7, 0x79e7, &green95, &blue95,
+		  "qvgreen95");
+    *color = green95;
+  }
+  else if (strcmp(str, "qvyellow95") == 0) {
+    if (yellow95.pixel == 0)
+      CreateColor(0xffff, 0xffff, 0xdf7d, &yellow95, &white,
+		  "qvyellow95");
+    *color = yellow95;
+  }
+  else if (XParseColor(display, colormap, str, color) != 0)
+    XAllocColor(display, colormap, color);
+  else
+    return -1;
+
+  return 0;
 }

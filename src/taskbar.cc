@@ -1,7 +1,7 @@
 /*
  * taskbar.cc
  *
- * Copyright (C) 1995-2000 Kenichi Kourai
+ * Copyright (C) 1995-2001 Kenichi Kourai
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -148,6 +148,9 @@ Taskbar::Taskbar(Qvwm* qvWm, int width, unsigned int rows)
 		       0, CopyFromParent, InputOutput, CopyFromParent,
 		       valueMask, &attributes);
 
+  XMapWindow(display, w);
+  XMapWindow(display, tbox);
+
   if (TaskbarImage) {
     imgTaskbar = CreateImageFromFile(TaskbarImage, timer);
     if (imgTaskbar) {
@@ -161,7 +164,6 @@ Taskbar::Taskbar(Qvwm* qvWm, int width, unsigned int rows)
     }
   }
 
-  Rect rect(0, 0, 0, 0);
   ctrlMenu = new Menu(TaskbarMenuItem, fsCtrlMenu, NULL, qvWm);
 
   toolTip = new Tooltip();
@@ -188,7 +190,6 @@ Taskbar::~Taskbar()
 void Taskbar::MapTaskbar()
 {
   XMapWindow(display, frame);
-  XMapWindow(display, w);
 
   RaiseTaskbar();
 
@@ -196,8 +197,6 @@ void Taskbar::MapTaskbar()
   ASSERT(rootQvwm->tButton);
 
   rootQvwm->tButton->MapButton();         // Start menu
-
-  XMapWindow(display, tbox);
 
   if (TaskbarAutoHide) {
     BasicCallback* cb;
@@ -322,6 +321,9 @@ void Taskbar::MoveTaskbar(const Point& ptRoot)
   Rect rcRoot = rootQvwm->GetRect();
   Bool pointer = False;
 
+  if (DisableDesktopChange)
+    return;
+
   /*
    * There is parts that cannot let taskbar to move.
    */
@@ -422,6 +424,9 @@ void Taskbar::ResizeTaskbar(const Point& ptRoot)
   Rect rcRoot = rootQvwm->GetRect();
   Bool pointer = False;
   int ctype;
+
+  if (DisableDesktopChange)
+    return;
 
   if (!OpaqueResize) {
     XGrabServer(display);
@@ -709,7 +714,7 @@ void Taskbar::DrawTaskbarFrame()
     XSetForeground(display, gc, darkGray.pixel);
     XDrawLine(display, frame, gc, rc[TOP].x, rc[TOP].height-2,
 	      rc[TOP].width-1, rc[TOP].height-2);
-    XSetForeground(display, gc, black.pixel);
+    XSetForeground(display, gc, darkGrey.pixel);
     XDrawLine(display, frame, gc, rc[TOP].x, rc[TOP].height-1,
 	      rc[TOP].width-1, rc[TOP].height-1);
     break;
@@ -718,7 +723,7 @@ void Taskbar::DrawTaskbarFrame()
     XSetForeground(display, gc, darkGray.pixel);
     XDrawLine(display, frame, gc, rc[LEFT].width-2, rc[LEFT].y,
 	      rc[LEFT].width-2, rc[LEFT].height-1);
-    XSetForeground(display, gc, black.pixel);
+    XSetForeground(display, gc, darkGrey.pixel);
     XDrawLine(display, frame, gc, rc[LEFT].width-1, rc[LEFT].y,
 	      rc[LEFT].width-1, rc[LEFT].height-1);
     break;
@@ -1035,6 +1040,9 @@ Rect Taskbar::GetScreenRectOnShowing() const
   case RIGHT:
     return Rect(0, 0, rcRoot.width - rc[RIGHT].width, rcRoot.height);
   }
+
+  ASSERT(False);
+  return Rect(0, 0, 0, 0);
 }
 
 /*
@@ -1057,6 +1065,9 @@ Rect Taskbar::GetScreenRectOnHiding() const
   case RIGHT:
     return Rect(0, 0, rcRoot.width - 2, rcRoot.height);
   }
+
+  ASSERT(False);
+  return Rect(0, 0, 0, 0);
 }
 
 void Taskbar::ShowTaskbar()
@@ -1168,12 +1179,14 @@ void Taskbar::RedrawAllTaskbarButtons()
 {
   List<Qvwm>::Iterator i(&desktop.GetQvwmList());
   Qvwm* tmpQvwm;
-  unsigned int buttonWidth;
+  int buttonWidth;
   int row, col;
   int buttonNum = 0, count = 0;
   StartButton *sButton = (StartButton *)rootQvwm->tButton;
   int x, y;
   Point offFrame;
+  Rect rcCurPage(paging->origin.x, paging->origin.y,
+		 rcScreen.width, rcScreen.height);
 
   // get offset between frame and w
   switch (pos) {
@@ -1231,10 +1244,18 @@ void Taskbar::RedrawAllTaskbarButtons()
   }
 
   // Count the number of taskbar buttons.
-  for (tmpQvwm = i.GetHead(); tmpQvwm; tmpQvwm = i.GetNext())
+  for (tmpQvwm = i.GetHead(); tmpQvwm; tmpQvwm = i.GetNext()) {
     if (!tmpQvwm->CheckFlags(TRANSIENT) && !tmpQvwm->CheckFlags(NO_TBUTTON) &&
-	(tmpQvwm->CheckMapped() || tmpQvwm->CheckStatus(MINIMIZE_WINDOW)))
+	(tmpQvwm->CheckMapped() || tmpQvwm->CheckStatus(MINIMIZE_WINDOW))) {
+      if (TaskbarButtonInScr) {
+	// count only taskbar buttons in the current page
+	if (!Intersect(tmpQvwm->GetRect(), rcCurPage))
+	  continue;
+      }
+
       buttonNum++;
+    }
+  }
      
   if (buttonNum == 0)
     return;
@@ -1264,6 +1285,10 @@ void Taskbar::RedrawAllTaskbarButtons()
     if (buttonWidth == 0)
       buttonWidth = 1;
     break;
+
+  default:
+    col = row = buttonWidth = 0;  // XXX for warning
+    ASSERT(False);
   }
 
   /*
@@ -1275,6 +1300,14 @@ void Taskbar::RedrawAllTaskbarButtons()
       continue;
 
     TaskbarButton* tb = tmpQvwm->tButton;
+
+    if (TaskbarButtonInScr) {
+      // show only taskbar buttons in the current page
+      if (!Intersect(tmpQvwm->GetRect(), rcCurPage)) {
+	tb->MoveResizeButton(Rect(-1, -1, 1, 1));  // hide
+	continue;
+      }
+    }
 
     switch (pos) {
     case BOTTOM:
@@ -1292,6 +1325,10 @@ void Taskbar::RedrawAllTaskbarButtons()
       y = TaskbarButton::rcTButton.y + TaskbarButton::BUTTON_HEIGHT + 12
 	+ (TaskbarButton::rcTButton.height + BETWEEN_SPACE) * (count / col);
       break;
+
+    default:
+      x = y = 0;  // XXX for warning
+      ASSERT(False);
     }
     count++;
     

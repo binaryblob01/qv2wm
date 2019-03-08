@@ -164,6 +164,16 @@ qu'ils soient consideres comme un double clic (au moins 1).
 Fixe la resistance opposee au mouvement du cadre d'une fenetre au dela d'un
 des bords de l'ecran.
 .TP
+\fBEnableAlsa\fP (True)
+Sets whether you enable ALSA (Advanced Linux Sound Architecture) if OS
+supports it.
+.TP
+\fBEnableEsd\fP (True)
+Sets whether you enable EsounD if installed.
+.TP
+\fBEnableSound\fP (True)
+Sets whether you enable the sound facility.
+.TP
 \fBEndingSound\fP (NULL)
 Fixe le fichier son a jouer quand qvwm se termine.
 .TP

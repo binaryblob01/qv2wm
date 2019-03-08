@@ -30,6 +30,9 @@
 /* Define if you want a debug version of qvwm */
 #undef DEBUG
 
+/* Define if you allow sending commands to qvwm */
+#undef ALLOW_RMTCMD
+
 /* Define if you want to use Imlib */
 #undef USE_IMLIB
 
