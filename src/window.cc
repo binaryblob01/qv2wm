@@ -123,7 +123,7 @@ void Qvwm::MapWindow(Bool mapTransient)
       fButton[1]->MapButton();
     else
       fButton[1]->UnmapButton();
-    if (CheckFlags(BUTTON3) || CheckFlags(WM_DELETE_WINDOW)) {
+    if (CheckFlags(BUTTON3)) {
       SetFlags(BUTTON3);
       fButton[2]->MapButton();
     }

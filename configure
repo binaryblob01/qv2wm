@@ -569,7 +569,7 @@ fi
 
 QVWM_MAJOR_VERSION=1
 QVWM_MINOR_VERSION=1
-QVWM_MICRO_VERSION=11
+QVWM_MICRO_VERSION=12
 
 QVWM_VERSION=$QVWM_MAJOR_VERSION.$QVWM_MINOR_VERSION.$QVWM_MICRO_VERSION
 
@@ -3951,7 +3951,7 @@ else
 #line 3952 "configure"
 #include "confdefs.h"
 #ifdef __cplusplus
-extern "C" void exit(int);
+extern "C" void exit(int) throw();
 #endif
 
 int main()
@@ -4515,6 +4515,9 @@ trap 'rm -fr `echo "Makefile
 	rc/kanji.qvwmrc
 	rc/french.qvwmrc
 	rc/korean.qvwmrc
+	rc/german.qvwmrc
+	rc/portuguese.qvwmrc
+	rc/italian.qvwmrc
 	rc/light.qvwmrc config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -4636,6 +4639,9 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile
 	rc/kanji.qvwmrc
 	rc/french.qvwmrc
 	rc/korean.qvwmrc
+	rc/german.qvwmrc
+	rc/portuguese.qvwmrc
+	rc/italian.qvwmrc
 	rc/light.qvwmrc"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF

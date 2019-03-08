@@ -1,5 +1,8 @@
 BUGS
 ----
+- Netscape 6.2 で [Applications] で "Netscape 6" と指定するとなぜかう
+  まくいくらしい
+- ALT-TAB が一回目効かないことがある(INSCR)
 - /dev/dsp に権限がない時、qvwm が落ちる？
 
 - 常に手前にあるウィンドウのダイアログが後ろに表示されてしまうことがある

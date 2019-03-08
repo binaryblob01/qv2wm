@@ -271,11 +271,17 @@ DefaultFontが使われます。
 アプリケーションが独自のアイコンビットマップをもっている時、その前景色
 を指定します。カラー名または#RRGGBBの形式で指定して下さい。
 .TP
+\fBIconHorizontalSpacing\fP (43)
+ショートカットアイコン間の横方向の間隔を指定します。
+.TP
 \fBIconSize\fP (32)
 ショートカットアイコンのサイズを指定します。
 .TP
 \fBIconStringColor\fP (white)
 ショートカットアイコンの文字の色を指定します。
+.TP
+\fBIconVerticalSpacing\fP (43)
+ショートカットアイコン間の縦方向の間隔を指定します。
 .TP
 \fBImageAnimation\fP (True)
 アイコンなどの画像をアニメーションさせるかどうかを指定します。
@@ -662,6 +668,15 @@ QVWM_CLOSE                 ウィンドウを閉じる[win]
 QVWM_KILL                  ウィンドウを強制的に閉じる[win]
 QVWM_TOGGLE_ONTOP          ONTOP属性のトグル切り換え[win]
 QVWM_TOGGLE_STICKY         STICKY属性のトグル切り換え[win]
+QVWM_TOGGLE_FOCUS          フォーカス属性のトグル切り換え[win]
+QVWM_TOGGLE_BORDER         外枠表示のトグル切り換え[win]
+QVWM_TOGGLE_BORDER_EDGE    内枠表示のトグル切り換え[win]
+QVWM_TOGGLE_BUTTON1        最小化ボタン表示のトグル切り換え[win]
+QVWM_TOGGLE_BUTTON2        元に戻すボタン表示のトグル切り換え[win]
+QVWM_TOGGLE_BUTTON3        閉じるボタン表示のトグル切り換え[win]
+QVWM_TOGGLE_CTRLBTN        コントロールボタン表示のトグル切り換え[win]
+QVWM_TOGGLE_TBUTTON        タスクバーボタン表示のトグル切り換え[win]
+QVWM_TOGGLE_TITLE          タイトルバー表示のトグル切り換え[win]
 .EE
 ウィンドウ・フォーカス
 .EX

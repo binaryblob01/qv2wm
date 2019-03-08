@@ -76,10 +76,12 @@ RemoteCommand::RemoteCommand()
     }
   }
 
-  if ((m_fd = open(m_fifoName, O_RDONLY | O_NONBLOCK)) == -1) {
+
+  if ((m_fd = open(m_fifoName, O_RDWR | O_NONBLOCK)) == -1) {
     QvwmError("open '%s': %s", m_fifoName, strerror(errno));
     return;
   }
+
 }
 
 RemoteCommand::~RemoteCommand()
@@ -101,7 +103,8 @@ void RemoteCommand::process()
   int len;
 
   if ((len = read(m_fd, buf, BUF_SIZE)) < 0) {
-    QvwmError("RemoteCommand: read: %s", strerror(errno));
+    if (errno != EAGAIN)
+      QvwmError("RemoteCommand: read: %s", strerror(errno));
     return;
   }
 
@@ -236,6 +239,22 @@ void RemoteCommand::interpret(char* cmd)
   case Q_TOGGLE_STICKY:
   case Q_ENABLE_STICKY:
   case Q_DISABLE_STICKY:
+    {
+	  List<Qvwm>* qvwmList = &desktop.GetQvwmList();
+          List<Qvwm>::Iterator i(qvwmList);
+          Qvwm* qvWm;
+          int idx=0;
+          XClassHint wm_class;        // STRING
+
+          for (qvWm = i.GetHead(); qvWm; qvWm = i.GetNext()) {
+                XGetClassHint(display, qvWm->GetWin(), &wm_class);
+		if ((!strncmp(args, wm_class.res_name, strlen(args))) ||
+                    (!strncmp(args, wm_class.res_class, strlen(args)))) {
+    			QvFunction::execFunction(*fn, qvWm);
+		}
+          }
+          break;
+    }
 
   default:
     QvwmError("not supported command '%s' as a remote command", cmd);

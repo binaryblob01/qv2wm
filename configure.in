@@ -5,7 +5,7 @@ AC_INIT(src/qvwm.cc)
 
 QVWM_MAJOR_VERSION=1
 QVWM_MINOR_VERSION=1
-QVWM_MICRO_VERSION=11
+QVWM_MICRO_VERSION=12
 
 QVWM_VERSION=$QVWM_MAJOR_VERSION.$QVWM_MINOR_VERSION.$QVWM_MICRO_VERSION
 
@@ -270,4 +270,7 @@ AC_OUTPUT(Makefile
 	rc/kanji.qvwmrc
 	rc/french.qvwmrc
 	rc/korean.qvwmrc
+	rc/german.qvwmrc
+	rc/portuguese.qvwmrc
+	rc/italian.qvwmrc
 	rc/light.qvwmrc)

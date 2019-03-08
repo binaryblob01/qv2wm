@@ -1077,5 +1077,21 @@ beta13a -> 1.0
 7. Fix the bug that part of the clock in the indicator area is hidden
    after all indicators terminated.
 
+1.1.11 -> 1.1.12
+----------------
+1. Fix the bug that qvwm sometimes crashes if sound is enabled at exit.
+2. Fix the bug that a close button does not disappear and a maximize
+   button disappears when you set NO_BUTTON3 to an application.
+3. Fix the bug that the CPU utilization becomes 100% after you send a
+   remote command to qvwm.
+4. Enable to send a remote command like QVWM_RESTORE to certain window.
+5. Eanble to change spacing between short cut icons using
+   IconHorizontalSpacing and IconVerticalSpacing.
+6. Add german.qvwmrc, portuguese.qvwmrc, and italian.qvwmrc.
+7. Fix the bug that a part of a menu is left on the screen after you
+   execute a command from the menu.
+8. Add QVWM_TOGGLE_{FOCUS, BORDER, BORDER_EDGE, BUTTON1, BUTTON2, BUTTON3,
+   CTRLBTN, TBUTTON, TITLE}.
+
 ---
 Translated partially by Yukihiro Nakai <Nakai@Mlab.t.u-tokyo.ac.jp>

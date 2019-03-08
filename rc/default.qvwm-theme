@@ -61,6 +61,8 @@ IndicatorSize		= 16
 
 ; shortcut icon
 IconSize		= 32		; icon size
+IconHorizontalSpacing	= 43		; horizontal space between icons
+IconVerticalSpacing	= 43		; vertical space between icons
 IconStringColor		= white
 IconStringActiveColor	= white
 IconForeColor		= black		; icon foreground color

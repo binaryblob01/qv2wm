@@ -35,7 +35,7 @@ OBJS = main.o event.o qvwm.o frame.o resize.o focus.o fbutton.o tbutton.o \
 CXXFLAGS = -g -O2 -I$(INCDIR) -I..
 DEFS += -DIMGDIR=\"$(IMGDIR)\" -DSNDDIR=\"$(SNDDIR)\" -DQVWMDIR=\"$(QVWMDIR)\" -DPATH_RM=\"$(PATH_RM)\"
 LDFLAGS = -O2 -L$(LIBDIR)
-LIBS = -lSM -lICE $(IMAGE_LIBS) -lXext -lX11 $(LEXLIB) $(XPG4_LIB) $(SNDLIB)
+LIBS = -lSM -lICE $(IMAGE_LIBS) $(SS_LIB) -lXext -lX11 $(LEXLIB) $(XPG4_LIB) $(SNDLIB)
 
 DEPEND = makedepend -fMakefile.std
 DEPEND_DEFINES = -I$(INCDIR) -I.. $(CXXDEFINES)

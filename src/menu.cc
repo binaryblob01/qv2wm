@@ -783,7 +783,7 @@ void Menu::Leave(Window win)
  */
 void Menu::Enter(Window win)
 {
-  if (win == frame)
+  if (!CheckMapped() || win == frame)
     return;
 
   int num, pFocus;
