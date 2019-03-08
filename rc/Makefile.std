@@ -1,0 +1,38 @@
+#
+# Makefile.std for rc files
+#
+
+RCFILES = system.qvwmrc kanji.qvwmrc french.qvwmrc korean.qvwmrc \
+	default.qvwm-theme clouds.qvwm-theme space.qvwm-theme
+
+all:
+
+install:: $(RCFILES)
+	@if [ -d $(QVWMDIR) ]; then set +x; \
+	else (set -x; $(MKDIRHIER) $(QVWMDIR)); fi
+	@for flag in ${MAKEFLAGS} ''; do \
+	case "$$flag" in *=*) ;; *[i]*) set +e;; esac; done; \
+	for i in $(RCFILES); do \
+	if [ -f $(QVWMDIR)/$$i ]; then (set -x; $(MV) $(QVWMDIR)/$$i $(QVWMDIR)/$$i.bak); fi; \
+	(set -x; $(INSTALL) $$i $(QVWMDIR)); \
+	done
+
+clean:
+	@rm *.qvwmrc
+
+system.qvwmrc: system.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' system.qvwmrc.in > system.qvwmrc
+
+kanji.qvwmrc: kanji.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' kanji.qvwmrc.in > kanji.qvwmrc
+
+french.qvwmrc: french.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' french.qvwmrc.in > french.qvwmrc
+
+korean.qvwmrc: korean.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' korean.qvwmrc.in > korean.qvwmrc
+
+light.qvwmrc: light.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' light.qvwmrc.in > light.qvwmrc
+
+depend:

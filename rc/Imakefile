@@ -1,0 +1,37 @@
+XCOMM
+XCOMM Imakefile for qvwm rc files
+XCOMM
+
+#include "../Config.tmpl"
+
+RCFILES = system.qvwmrc kanji.qvwmrc french.qvwmrc korean.qvwmrc \
+	default.qvwm-theme clouds.qvwm-theme space.qvwm-theme
+
+#ifndef InstallMultipleWithBackup
+#define InstallMultipleWithBackup(list,dest)				@@\
+install:: list								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@MakeFlagsToShellFlags(i,set +e); \				@@\
+	for i in list; do \						@@\
+		if [ -f $(DESTDIR)dest/$$i ]; then \
+			(set -x; $(MV) $(DESTDIR)dest/$$i $(DESTDIR)dest/$$i.bak); fi; \	@@\
+		(set -x; $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $$i $(DESTDIR)dest); \	@@\
+	done
+#endif /* InstallMultipleWithBackup */
+
+InstallMultipleWithBackup($(RCFILES),$(QVWMDIR))
+
+system.qvwmrc: system.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' system.qvwmrc.in > system.qvwmrc
+
+kanji.qvwmrc: kanji.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' kanji.qvwmrc.in > kanji.qvwmrc
+
+french.qvwmrc: french.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' french.qvwmrc.in > french.qvwmrc
+
+korean.qvwmrc: korean.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' korean.qvwmrc.in > korean.qvwmrc
+
+light.qvwmrc: light.qvwmrc.in
+	sed -e 's!@QVWMDIR@!$(QVWMDIR)!g' light.qvwmrc.in > light.qvwmrc
