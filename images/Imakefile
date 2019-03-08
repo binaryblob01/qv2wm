@@ -5,33 +5,21 @@ XCOMM
 #include "../Config.tmpl"
 
 PIXMAPS = \
-def16.ani \
-def32.ani \
-emacs16.ani \
-emacs32.ani \
-exit32.ani \
-find32.ani \
+def16.xpm \
+def32.xpm \
+exit32.xpm \
+find32.xpm \
 help32.xpm \
-icon16.ani \
-icon32.ani \
-netscape16.ani \
-netscape32.ani \
-quit32.ani \
-run32.ani \
-setting32.ani \
-taskbar16.ani \
+icon16.xpm \
+icon32.xpm \
+quit32.run \
+run32.xpm \
+setting32.xpm \
+taskbar16.xpm \
 xcalc16.xpm \
-xcalc32.ani \
-xeyes16.ani \
-xeyes32.ani \
 xterm16.xpm \
-xterm32.ani \
+xterm32.xpm \
 xv16.xpm \
-xv32.xpm \
-qvwmdesk.ani \
-clouds.xpm \
-clouds2.xpm \
-logo_clouds.xpm \
-logo_os2.xpm
+xv32.xpm
 
 InstallMultiple($(PIXMAPS),$(IMGDIR))

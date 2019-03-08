@@ -11,7 +11,7 @@ SRCS = main.cc event.cc qvwm.cc frame.cc resize.cc focus.cc fbutton.cc \
        rearrange.cc move.cc resize_sp.cc debug.cc focus_mgr.cc desktop.cc \
        mini.cc ctrl_button.cc titlebar.cc mwm.cc gnome.cc audio.cc \
        audio_wav.cc audio_au.cc exec.cc info_display.cc tooltip.cc \
-       accessory.cc image.cc pixmap_image.cc anim_image.cc extra_image.cc \
+       accessory.cc image.cc pixmap_image.cc extra_image.cc \
        session.cc confirm_dialog.cc screen_saver.cc remote_cmd.cc \
        audiodev.cc audiodev_alsa.cc audiodev_esd.cc audiodev_oss.cc \
        audiodev_sun.cc menu_func.cc
@@ -24,7 +24,7 @@ OBJS = main.o event.o qvwm.o frame.o resize.o focus.o fbutton.o tbutton.o \
        timer.o key.o indicator.o rearrange.o move.o resize_sp.o debug.o \
        focus_mgr.o desktop.o mini.o ctrl_button.o titlebar.o mwm.o gnome.o \
        audio.o audio_wav.o audio_au.o exec.o info_display.o tooltip.o \
-       accessory.o image.o pixmap_image.o anim_image.o extra_image.o \
+       accessory.o image.o pixmap_image.o extra_image.o \
        session.o confirm_dialog.o screen_saver.o remote_cmd.o \
        audiodev.o audiodev_alsa.o audiodev_esd.o audiodev_oss.o \
        audiodev_sun.o menu_func.o

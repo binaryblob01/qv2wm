@@ -1,0 +1,13 @@
+XPMINCDIR = /usr/include/X11
+XPMLIBDIR = /usr/X11/lib
+XPMLIB = -L$(XPMLIBDIR) -lXpm
+LOCAL_LIBRARIES = $(XLIB) -lm $(XPMLIB)
+
+# uncomment the next line to use the little modem.
+#DEFINES = -DUSEMODEM
+
+	FILE = qvwm-net
+	SRCS = $(FILE).c
+	OBJS = $(FILE).o
+
+ComplexProgramTarget($(FILE))

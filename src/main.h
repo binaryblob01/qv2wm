@@ -117,6 +117,7 @@ extern InfoDisplay*     infoDisp;
 extern void FinishQvwm();
 extern void RestartQvwm(Bool minimumRestart = False, int count = 0,
 			Bool cleanup = True);
+void initialize_user_conf_files();
 
 extern Pixmap CreateGradPixmap(unsigned long* pat, int width, Window win);
 extern void CreateGradPattern();

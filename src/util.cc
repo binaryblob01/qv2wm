@@ -54,7 +54,7 @@
 #include "exec.h"
 #include "paging.h"
 #include "pager.h"
-#include "anim_image.h"
+//#include "anim_image.h" //removed anim image
 #include "pixmap_image.h"
 #ifdef USE_IMLIB
 #include "extra_image.h"
@@ -103,6 +103,7 @@ Bool InRect(const Point& pt, const Rect& rc)
  */
 Bool Intersect(const Rect& rc1, const Rect& rc2)
 {
+#if 0 // Qvwm's Intersect is buggy!	
   if (InRect(Point(rc1.x, rc1.y), rc2) ||
       InRect(Point(rc1.x + rc1.width - 1, rc1.y), rc2) ||
       InRect(Point(rc1.x, rc1.y + rc1.height - 1), rc2) ||
@@ -114,6 +115,11 @@ Bool Intersect(const Rect& rc1, const Rect& rc2)
     return True;
 
   return False;
+#endif
+  if (Min(rc1.x + rc1.width, rc2.x + rc2.width) - Max(rc1.x, rc2.x) > 0 &&
+      Min(rc1.y + rc1.height, rc2.y + rc2.height) - Max(rc1.y, rc2.y) > 0)
+    return True;
+  return False;  
 }
 
 /*
@@ -212,9 +218,11 @@ QvImage* CreateImage(char* filename, Timer* timer)
 #else
   if (stat(filename, &st) == 0) {
 #endif
-    if (strcmp(&filename[len - 4], ".ani") == 0)
-      img = new AnimImage(filename, timer);
-    else {
+//Removed anim image
+//    if (strcmp(&filename[len - 4], ".ani") == 0)
+//      img = new AnimImage(filename, timer);
+//    else 
+{
 #ifdef USE_IMLIB
       img = new ExtraImage(filename);
 #else

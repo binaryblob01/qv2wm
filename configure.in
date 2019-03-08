@@ -217,9 +217,6 @@ AC_FUNC_VFORK
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(usleep)
 
-dnl Makes a symbolic link
-AC_LINK_FILES(man/$MANUAL, man/qvwm.1x)
-
 # Select language for manual page from the specified parameter or, if missing,
 # the LANGUAGE environment variable. LANG can not be used, as autoconf alters it
 # to cope with broken systems.
@@ -238,6 +235,9 @@ case "$MAN_LOCALE" in
 		MANUAL=qvwm.man
 	;;
 esac
+
+dnl Makes a symbolic link
+AC_CONFIG_LINKS(man/qvwm.1x:man/$MANUAL)
 
 if test -z "$QVWMDIR"; then
 	if test "x$prefix" = xNONE ; then

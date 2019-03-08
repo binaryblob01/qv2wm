@@ -431,8 +431,9 @@ void Menu::MapMenu(int x, int y, int dir)
    */
   if (qvWm->CheckMapped()) {
     if (qvWm != rootQvwm)
-      for (int i = 1; i < 4; i++)
-	XGrabButton(display, i, 0, qvWm->GetWin(), True, ButtonPressMask,
+//Changes for numlock and capslock
+//      for (int i = 1; i < 4; i++)
+	XGrabButton(display, AnyButton, AnyModifier, qvWm->GetWin(), True, ButtonPressMask,
 		    GrabModeAsync, GrabModeAsync, None, cursor[0]);
   }
 

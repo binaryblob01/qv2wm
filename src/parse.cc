@@ -701,7 +701,7 @@ void CreateAccessory(char* filename, char* pos, char* mode)
   desktop.GetAccList().InsertTail(acc);
 }
 
-#define DEFAULT_FONT "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*"
+#define DEFAULT_FONT "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*,-*-*-medium-r-normal-*,*"
 
 /*
  * SetFont --
@@ -717,7 +717,10 @@ void SetFont()
   int fsNum = (UseBoldFont) ? FsNum : FsNum - 1;
 
   // create default font
-  fsDefault = XCreateFontSet(display, DefaultFont, &miss, &nMiss, &def);
+  char* fontname = new char[strlen(DefaultFont) + strlen(DEFAULT_FONT) + 2];
+  sprintf(fontname, "%s,%s", DefaultFont, DEFAULT_FONT);
+  fsDefault = XCreateFontSet(display, fontname, &miss, &nMiss, &def);
+  delete [] fontname;
   if (fsDefault == NULL) {
     QvwmError("Can't find font '%s'", DefaultFont);
     fsDefault = XCreateFontSet(display, DEFAULT_FONT, &miss, &nMiss, &def);
@@ -749,8 +752,11 @@ void SetFont()
       }
     }
     if (!match) {
-      *fsSet[i].fs = XCreateFontSet(display, *fsSet[i].fontname, &miss, &nMiss,
+      char* fontname = new char[strlen(*fsSet[i].fontname) + strlen(DEFAULT_FONT) + 2];
+      sprintf(fontname, "%s,%s", *fsSet[i].fontname, DEFAULT_FONT);
+      *fsSet[i].fs = XCreateFontSet(display, fontname, &miss, &nMiss,
 				    &def);
+      delete [] fontname;
       if (miss)
 	XFreeStringList(miss);
 

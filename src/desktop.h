@@ -74,6 +74,8 @@ public:
   void RedrawAllIcons();
   void LineUpAllIcons();
 
+  void SaveIcons();
+
   Taskbar::TaskbarPos GetDesktopArea(const Point& pt);
 
   void SetWallPaper();

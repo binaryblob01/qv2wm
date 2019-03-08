@@ -752,14 +752,14 @@ void Taskbar::DrawTaskbar()
   case BOTTOM:
   case TOP:
     // between start button and taskbar buttons
-    x = sButton->buttonWidth + 2;
+    x = sButton->buttonWidth + 2;//+100; //bu kısım launcher_miktari*16+bosluklar olacak simdilik 100 ekşldik
     y = TaskbarButton::rcTButton.y;
-
+//lines in taskbar left side
     XSetForeground(display, gc, darkGray.pixel);
     XDrawLine(display, w, gc, x + 2, y, x + 2, y + rc[pos].height - 7);
     XSetForeground(display, gc, white.pixel);
     XDrawLine(display, w, gc, x + 3, y, x + 3, y + rc[pos].height - 7);
-
+//lines drag drop 
     xp[0].x = x + 7;
     xp[0].y = y + 2;
     xp[1].x = x + 6;
@@ -1313,7 +1313,7 @@ void Taskbar::RedrawAllTaskbarButtons()
     case BOTTOM:
     case TOP:
       x = TaskbarButton::rcTButton.x + sButton->buttonWidth + 13
-	+ (buttonWidth + BETWEEN_SPACE) * (count % col);
+	+ (buttonWidth + BETWEEN_SPACE) * (count % col);//+100;//degisen kisim
       y = TaskbarButton::rcTButton.y
 	+ (count / col) * (TaskbarButton::rcTButton.height + BETWEEN_SPACE);
       break;

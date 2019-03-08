@@ -112,7 +112,7 @@ TASKBAR_SRCS = taskbar.cc taskbar.h tbutton.cc tbutton.h indicator.cc indicator.
 
 PAGER_SRCS = pager.cc pager.h mini.cc mini.h 
 
-IMAGE_SRCS = image.cc image.h pixmap_image.cc pixmap_image.h extra_image.cc extra_image.h anim_image.cc anim_image.h
+IMAGE_SRCS = image.cc image.h pixmap_image.cc pixmap_image.h extra_image.cc extra_image.h 
 
 
 BUTTON_SRCS = button.cc button.h string_button.cc string_button.h ctrl_button.cc fbutton.cc fbutton.h sbutton.cc sbutton.h
@@ -153,7 +153,7 @@ key.o parse.o yaccsrc.o lexsrc.o qvwmrc.o mwm.o gnome.o session.o \
 screen_saver.o desktop.o icon.o switcher.o paging.o info_display.o \
 accessory.o menu.o menu_func.o startmenu.o taskbar.o tbutton.o \
 indicator.o pager.o mini.o image.o pixmap_image.o extra_image.o \
-anim_image.o button.o string_button.o ctrl_button.o fbutton.o sbutton.o \
+button.o string_button.o ctrl_button.o fbutton.o sbutton.o \
 dialog.o system_dialog.o radio_button.o radio_set.o exit_dialog.o \
 confirm_dialog.o tooltip.o audio.o audio_wav.o audio_au.o audiodev.o \
 audiodev_alsa.o audiodev_esd.o audiodev_oss.o audiodev_sun.o \

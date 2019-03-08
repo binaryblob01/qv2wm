@@ -238,6 +238,12 @@ static int FinishErrorHandler(Display* display, XErrorEvent* ev);
  */
 void Desktop::FinishQvwm(Bool reStart)
 {
+
+//Save All desktop icons position
+  if (!reStart) {
+    desktop.SaveIcons();
+    }
+
   // when parse error before a start flag is set
   if (!start) {
     XCloseDisplay(display);
@@ -431,10 +437,9 @@ void Desktop::CreateIcons()
 			 -(IconSize + IconVerticalSpacing)));
     icon->MapIcon();
 
-    tmpItem = mItem;
+//    tmpItem = mItem;
     mItem = mItem->next;
-    
-    delete tmpItem;
+//    delete tmpItem;
   }
 }
 
@@ -587,5 +592,62 @@ void Desktop::CreateAccessories()
 
 void Desktop::SetFocus()
 {
-  XSetInputFocus(display, topWin, RevertToParent, CurrentTime);
+  XSetInputFocus(display, topWin, RevertToNone, CurrentTime);
+}
+
+
+
+/*save desktop to file*/
+//M.Ali VARDAR 2003
+void Desktop::SaveIcons()
+{
+  FILE	*dosya;
+  char dosya_adi[255];
+  
+  strcpy(dosya_adi, getenv("HOME"));
+  strcat(dosya_adi, "/.qvwm/desktop");
+
+  List<Icon>::Iterator i(&iconList);
+  int count = 0;
+  int iconColumnNum;
+
+  iconColumnNum = rcScreen.height / (IconSize + IconVerticalSpacing);
+
+char exec[255];
+
+if (!(dosya=fopen(dosya_adi, "w"))) {return;}
+fprintf(dosya, "[Shortcuts]\n");
+
+  for (Icon* tmpIcon = i.GetHead(); tmpIcon; tmpIcon = i.GetNext()) 
+    {
+	//x,y noktalari
+	Rect rcVirt = tmpIcon->GetVirtRect();
+//	printf("x:%i ", rcVirt.x);
+//	printf("y:%i ", rcVirt.y);
+
+	//exec	
+	char *cmd = tmpIcon->GetExec();
+	strcpy(exec, &cmd[0]);
+//	printf("exec:%s\n ", exec);
+
+	if (ShortCutItem == NULL)    return;
+	MenuElem* mItem = ShortCutItem;
+	MenuElem* tmpItem;
+
+	while (mItem) 
+	{
+	    if (strcmp(exec,mItem->exec)==0)	    
+	    fprintf (dosya,
+	    "\"%s\"      \"%s\"     \"%s\"  %i,%i\n", 
+	    mItem->name, mItem->file, mItem->exec, rcVirt.x, rcVirt.y );
+
+	    //tmpItem = mItem;
+	    mItem = mItem->next;
+	    //delete tmpItem;    
+
+	}
+
+    }
+fclose(dosya);
+
 }

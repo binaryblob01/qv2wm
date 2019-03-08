@@ -116,9 +116,12 @@ void FocusMgr::ResetFocus(Qvwm* qvWm)
      * Grab buttons so that the window without focus can get focus by
      * ButtonPress.
      */
-    for (int i = 1; i < 4; i++)
-      XGrabButton(display, i, 0, qvWm->GetWin(), True, ButtonPressMask,
+     //Change for numlock and capslock 
+//    for (int i = 1; i < 4; i++)
+      XGrabButton(display, AnyButton, AnyModifier, qvWm->GetWin(), True, ButtonPressMask,
 		  GrabModeSync, GrabModeAsync, None, cursor[SYS]);
+
+
   }
 
   /*

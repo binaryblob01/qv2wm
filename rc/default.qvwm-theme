@@ -1,4 +1,4 @@
-;
+;Plase dont edit this file use laserion config manager
 ; default.qvwm-theme
 ;
 ;   qvwm theme file (default theme)
@@ -14,8 +14,9 @@ DefaultShortcutIcon	= "icon32.ani"	; default shortcut icon
 DefaultFont		= "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*"
 
 ; desktop
-WallPaper		= Windows2000	; image tiled in the desktop
-DesktopColor		= qvroyalblue	; desktop background color
+;WallPaper		= os.xpm	; image tiled in the desktop
+;DesktopColor		= qvroyalblue	; desktop background color
+DesktopColor		= black		;
 DesktopActiveColor	= qvblue	; desktop active color
 CursorColor		= white		; cursor color
 
@@ -48,7 +49,7 @@ MiniatureColor		= yellow	; non-active mini window color in pager
 MiniatureActiveColor	= red		; active mini window color in pager
 
 ; taskbar
-TaskbarButtonHeight	= 22
+TaskbarButtonHeight	= 20
 ;TaskbarImage		= ""		; taskbar background image
 TaskbarColor		= qvgray	; taskbar color
 ClockStringColor	= black		; clock string color
@@ -79,7 +80,7 @@ MenuStringActiveColor	= white		; menu string color (selected)
 CtrlMenuFont		= "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*"
 
 ; startmenu
-;StartMenuLogoImage	= ""
+StartMenuLogoImage	= "menubar.xpm"
 StartMenuLogoColor	= qvblue
 StartMenuFont		= "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*"
 CascadeMenuFont		= "-*-*-medium-r-normal-*-14-*-*-*-*-*-*-*"
@@ -105,20 +106,8 @@ ButtonStringActiveColor	= black		; button string active color
 TooltipColor		= qvlightyellow
 TooltipStringColor	= black
 
-; sounds
-SystemStartSound	= "chimes.wav"
-SystemExitSound		= "chimes.wav"
-SystemRestartSound	= "chimes.wav"
-;MaximizeSound		= ""
-;MinimizeSound		= ""
-;RestoreUpSound		= ""
-;RestoreDownSound	= ""
-;ExpandSound		= ""
-;OpenSound		= ""
-;CloseSound		= ""
-;MenuPopupSound		= ""
-;MenuCommandSound	= ""
+;system sounds
+include $HOME/.qvwm/sound
 
-
-[Accessories]
-"qvwmdesk.ani"		TopRight	Background
+;bacground image
+include $HOME/.qvwm/background

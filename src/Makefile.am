@@ -39,7 +39,7 @@ indicator.cc indicator.h
 PAGER_SRCS = pager.cc pager.h mini.cc mini.h 
 
 IMAGE_SRCS = image.cc image.h pixmap_image.cc pixmap_image.h \
-extra_image.cc extra_image.h anim_image.cc anim_image.h
+extra_image.cc extra_image.h 
 
 BUTTON_SRCS = button.cc button.h string_button.cc string_button.h \
 ctrl_button.cc fbutton.cc fbutton.h sbutton.cc sbutton.h

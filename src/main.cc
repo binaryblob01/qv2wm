@@ -192,11 +192,15 @@ void TrapSignal(int sig);
 void TrapChild(int sig);
 void TrapAlarm(int sig);
 void TrapHup(int sig);
+void control_conf_files();
 
 int main(int argc, char** argv)
 {
   qvArgv = argv;
 
+  //user config files control
+  initialize_user_conf_files();
+  
   AnalizeOptions(argc, argv);
 
   /*
@@ -207,8 +211,8 @@ int main(int argc, char** argv)
     exit(1);
   }
 
-  if (displayName)
-    SetDisplayEnv(displayName);
+  if (displayName)  SetDisplayEnv(displayName);
+
 
   /*
    * Synchronize X events.
@@ -424,7 +428,7 @@ void DisplayConfig()
 void InitQvwm()
 {
   XSetErrorHandler(QvwmErrorHandler);
-
+	
 #ifdef USE_IMLIB
   ExtraImage::Initialize();
 #endif
@@ -880,7 +884,9 @@ void FinishQvwm()
   }
   else
 #endif // USE_XSMP
-    desktop.FinishQvwm(False);
+
+desktop.FinishQvwm(False);
+  
 }
 
 void RestartQvwm(Bool minimumRestart, int count, Bool cleanup)
@@ -935,4 +941,56 @@ void RestartQvwm(Bool minimumRestart, int count, Bool cleanup)
   argv[j] = NULL;
   
   execvp(argv[0], argv);
+}
+
+
+void initialize_user_conf_files()
+{
+    FILE *fd;
+    char cmd[255];
+    char home[255];
+    char file[255];
+    
+    strcpy( home, getenv("HOME") );
+    
+//directory
+    sprintf(file, "%s/.qvwm", home);
+    fd = fopen(file, "r");    
+    if (fd) fclose(fd); else {sprintf(file, "mkdir %s/.qvwm", home);system(file);}
+
+//indicators
+    sprintf(file, "%s/.qvwm/indicators", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/indicators %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
+//background
+    sprintf(file, "%s/.qvwm/background", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/background %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
+//desktop
+    sprintf(file, "%s/.qvwm/desktop", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/desktop %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
+//launcher
+    sprintf(file, "%s/.qvwm/launcher", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/launcher %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
+//menu
+    sprintf(file, "%s/.qvwm/menu", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/menu %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
+//sound
+    sprintf(file, "%s/.qvwm/sound", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/sound %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
+//startup	
+    sprintf(file, "%s/.qvwm/startup", home);
+    fd = fopen(file, "r");
+    if (fd) fclose(fd); else  {sprintf(cmd, "cp %s/templates/startup %s/.qvwm", QVWMDIR, home ); system(cmd); }
+
 }

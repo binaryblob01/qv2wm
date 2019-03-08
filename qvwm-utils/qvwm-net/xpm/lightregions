@@ -1,0 +1,12 @@
+int 
+receive_x = 3, 
+receive_y = 5,
+
+receive_w = 4,
+receive_h = 4,
+
+send_x = 10,
+send_y = 2,
+
+send_w = 5,
+send_h = 5;

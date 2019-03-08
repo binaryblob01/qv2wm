@@ -77,6 +77,11 @@ extern "C" void bzero(char *, int);
 
 Qvwm*	Qvwm::focusQvwm;
 
+#ifndef DISABLE_AUTO_RESTART
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 /*
  * MainLoop --
  *   Wait event and timeout.
@@ -96,6 +101,17 @@ void Event::MainLoop()
   int rmtCmdFd = -1;
 #endif
 
+#ifndef DISABLE_AUTO_RESTART
+#define RESTART_LOCK 	"/tmp/qvwm-restart"
+  
+  struct stat buf;
+  Bool qlock = True;
+  if (stat( RESTART_LOCK, &buf) < 0)
+    qlock = False;
+#endif
+  
+  static time_t old_time = buf.st_mtime;
+  
   while (1) {
     while (XPending(display) != 0) {
       XNextEvent(display, &ev);
@@ -104,6 +120,19 @@ void Event::MainLoop()
       timer->CheckTimeout(&tm);
     }
 
+#ifndef DISABLE_AUTO_RESTART
+    if (qlock) {
+       if (stat(RESTART_LOCK, &buf) < 0) {
+	  qlock = False;
+	  goto run_away;
+       }
+       time_t new_time = buf.st_mtime;
+       if (new_time > old_time)
+	  RestartQvwm();
+    }
+run_away:    
+#endif    
+    
     FD_ZERO(&fds);
     FD_SET(fd, &fds);
     fdMax = fd;

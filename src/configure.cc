@@ -88,14 +88,13 @@ void Qvwm::Configure(const XConfigureRequestEvent* cre)
     rcOrig.x = cre->x - rcScreen.x;
     if (!CheckFlags(STICKY))
       rcOrig.x += paging->origin.x;
-    rc.x = cre->x + paging->origin.x - borderWidth;
+    rc.x = cre->x + paging->origin.x;
   }
   if (cre->value_mask & CWY) {
     rcOrig.y = cre->y - rcScreen.y;
     if (!CheckFlags(STICKY))
       rcOrig.y += paging->origin.y;
     rc.y = cre->y + paging->origin.y;
-    rc.y -= topBorder + titleHeight + titleEdge;
   }
   if (cre->value_mask & CWWidth) {
     rcOrig.width = cre->width;

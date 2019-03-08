@@ -1,0 +1,3 @@
+xmkmf                 # create the Makefile from the Imakefile
+make                  # compile and link the program
+
