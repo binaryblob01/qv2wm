@@ -1,0 +1,10 @@
+XPMINCDIR = /usr/include/X11
+XPMLIBDIR = /usr/X11/lib
+XPMLIB = -L$(XPMLIBDIR) -lXpm
+LOCAL_LIBRARIES = $(XLIB) -lm $(XPMLIB)
+
+	FILE = qvwm-sound
+	SRCS = $(FILE).c
+	OBJS = $(FILE).o
+
+ComplexProgramTarget($(FILE))
